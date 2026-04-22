@@ -303,19 +303,24 @@
     box-shadow:var(--shadow);transition:transform .25s;cursor:default;border:1px solid var(--line);
   }
   .hl:hover{transform:scale(1.02)}
-  .hl .ph{
-    position:absolute;inset:0;
-    background:linear-gradient(180deg, rgba(15,22,36,0) 0%, rgba(15,22,36,.65) 100%),
-      var(--ph,linear-gradient(135deg,#4a6e3a,#1a3d5c));
+  .hl .bg{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    opacity:.30;z-index:0;transition:opacity .25s;filter:saturate(1.05);
   }
-  .hl[data-k="stari-most"] .ph{--ph:linear-gradient(135deg,#2a5caa 0%,#5a3e7a 100%)}
-  .hl[data-k="kravica"] .ph{--ph:linear-gradient(135deg,#4a8ed8 0%,#5a8a3a 100%)}
-  .hl[data-k="ivan-sedlo"] .ph{--ph:linear-gradient(135deg,#6b8fa5 0%,#2a3e5a 100%)}
-  .hl[data-k="blagaj"] .ph{--ph:linear-gradient(135deg,#3a7ab3 0%,#5a8a3a 100%)}
-  .hl[data-k="pocitelj"] .ph{--ph:linear-gradient(135deg,#c8912a 0%,#8a4a20 100%)}
-  .hl[data-k="neum"] .ph{--ph:linear-gradient(135deg,#6badf0 0%,#2a5caa 100%)}
-  .hl[data-k="radimlja"] .ph{--ph:linear-gradient(135deg,#7a7060 0%,#4a4030 100%)}
-  .hl[data-k="prenj"] .ph{--ph:linear-gradient(135deg,#8a9ab0 0%,#3a4a60 100%)}
+  .hl:hover .bg{opacity:.42}
+  .hl .ph{
+    position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(180deg, rgba(15,22,36,0) 0%, rgba(15,22,36,.72) 100%),
+      var(--ph,linear-gradient(135deg,rgba(74,110,58,.55),rgba(26,61,92,.55)));
+  }
+  .hl[data-k="stari-most"] .ph{--ph:linear-gradient(135deg,rgba(42,92,170,.55) 0%,rgba(90,62,122,.55) 100%)}
+  .hl[data-k="kravica"] .ph{--ph:linear-gradient(135deg,rgba(74,142,216,.55) 0%,rgba(90,138,58,.55) 100%)}
+  .hl[data-k="ivan-sedlo"] .ph{--ph:linear-gradient(135deg,rgba(107,143,165,.55) 0%,rgba(42,62,90,.55) 100%)}
+  .hl[data-k="blagaj"] .ph{--ph:linear-gradient(135deg,rgba(58,122,179,.55) 0%,rgba(90,138,58,.55) 100%)}
+  .hl[data-k="pocitelj"] .ph{--ph:linear-gradient(135deg,rgba(200,145,42,.55) 0%,rgba(138,74,32,.55) 100%)}
+  .hl[data-k="neum"] .ph{--ph:linear-gradient(135deg,rgba(107,173,240,.55) 0%,rgba(42,92,170,.55) 100%)}
+  .hl[data-k="radimlja"] .ph{--ph:linear-gradient(135deg,rgba(122,112,96,.55) 0%,rgba(74,64,48,.55) 100%)}
+  .hl[data-k="prenj"] .ph{--ph:linear-gradient(135deg,rgba(138,154,176,.55) 0%,rgba(58,74,96,.55) 100%)}
   .hl .body{position:relative;z-index:2;height:100%;padding:20px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff}
   .hl .tag{
     font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
@@ -592,6 +597,7 @@
     </div>
     <div class="hl-grid">
       <div class="hl" data-k="stari-most">
+        <img class="bg" src="photos/stari-most.jpg" loading="lazy" alt="Stari Most, Mostar" />
         <div class="ph"></div>
         <div class="body">
           <span class="tag unesco">UNESCO</span>
@@ -600,6 +606,7 @@
         </div>
       </div>
       <div class="hl" data-k="kravica">
+        <img class="bg" src="photos/kravica.jpg" loading="lazy" alt="Kravica waterfall, Trebižat" />
         <div class="ph"></div>
         <div class="body">
           <span class="tag">Prirodni spomenik</span>
@@ -608,6 +615,7 @@
         </div>
       </div>
       <div class="hl" data-k="ivan-sedlo">
+        <img class="bg" src="photos/ivan-sedlo.jpg" loading="lazy" alt="Bjelašnica massif near Ivan-sedlo" />
         <div class="ph"></div>
         <div class="body">
           <span class="tag">Vrh etape 1</span>
@@ -616,6 +624,7 @@
         </div>
       </div>
       <div class="hl" data-k="blagaj">
+        <img class="bg" src="photos/blagaj.jpg" loading="lazy" alt="Blagaj Tekija and Vrelo Bune" />
         <div class="ph"></div>
         <div class="body">
           <span class="tag">Prirodni spomenik</span>
@@ -624,6 +633,7 @@
         </div>
       </div>
       <div class="hl" data-k="pocitelj">
+        <img class="bg" src="photos/pocitelj.jpg" loading="lazy" alt="Počitelj Old Town" />
         <div class="ph"></div>
         <div class="body">
           <span class="tag">Kandidat UNESCO</span>
@@ -632,6 +642,7 @@
         </div>
       </div>
       <div class="hl" data-k="neum">
+        <img class="bg" src="photos/neum.jpg" loading="lazy" alt="Neum on the Adriatic" />
         <div class="ph"></div>
         <div class="body">
           <span class="tag">Finiš</span>
@@ -640,6 +651,7 @@
         </div>
       </div>
       <div class="hl" data-k="radimlja">
+        <img class="bg" src="photos/radimlja.jpg" loading="lazy" alt="Radimlja stećci necropolis" />
         <div class="ph"></div>
         <div class="body">
           <span class="tag unesco">UNESCO</span>
@@ -648,6 +660,7 @@
         </div>
       </div>
       <div class="hl" data-k="prenj">
+        <img class="bg" src="photos/prenj.jpg" loading="lazy" alt="Prenj massif" />
         <div class="ph"></div>
         <div class="body">
           <span class="tag">Dinaridi</span>
