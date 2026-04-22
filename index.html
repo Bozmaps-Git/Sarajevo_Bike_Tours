@@ -12,7 +12,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,800;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,800;1,400&family=Open+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
 
 <style>
   :root{
@@ -40,7 +40,7 @@
     --radius:12px;
     --radius-sm:8px;
     --display:"Fraunces",Georgia,serif;
-    --sans:"Inter",-apple-system,"Segoe UI",Roboto,sans-serif;
+    --sans:"Open Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
     --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
 
@@ -268,14 +268,6 @@
     border:1px solid var(--line);
   }
   .map-preview iframe{width:100%;height:100%;border:0;display:block}
-  .map-preview-overlay{
-    position:absolute;top:20px;left:20px;z-index:2;
-    background:rgba(250,246,235,.96);backdrop-filter:blur(6px);
-    padding:10px 16px;border-radius:999px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;
-    text-transform:uppercase;color:var(--sky);font-weight:700;
-    display:flex;align-items:center;gap:8px;box-shadow:var(--shadow);
-  }
-  .map-preview-overlay .dot{width:8px;height:8px;border-radius:50%;background:var(--route)}
   .map-open-btn{
     position:absolute;bottom:20px;right:20px;z-index:2;
     padding:12px 20px;background:var(--sky);color:#fff;border-radius:999px;
@@ -534,7 +526,6 @@
       </p>
     </div>
     <div class="map-preview">
-      <div class="map-preview-overlay"><span class="dot"></span><span data-i18n="mp.live">Uživo · OpenStreetMap + SRTM</span></div>
       <iframe src="map.html" title="Tour of BiH · Interactive Map" loading="lazy"></iframe>
       <a href="map.html" class="map-open-btn" data-i18n="mp.open">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 L17 7 M7 7 L17 7 L17 17"/></svg>
