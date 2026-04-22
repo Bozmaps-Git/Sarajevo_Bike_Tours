@@ -213,14 +213,53 @@
   .stage-card .meta .k{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted)}
   .stage-card .meta .v{font-family:var(--display);font-size:16px;color:var(--ink);font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
   .stage-card .meta .v small{font-family:var(--sans);font-size:11px;color:var(--ink-muted);font-weight:400}
-  .stage-card .gpx{
-    display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
+  .stage-card .actions{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);
   }
-  .stage-card .gpx a{
-    font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--sky);font-weight:600;
-    display:inline-flex;align-items:center;gap:4px;
+  .stage-card .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border-radius:8px;
+    font-size:12.5px;font-weight:600;transition:all .15s;white-space:nowrap;
   }
-  .stage-card .gpx a:hover{color:var(--sky-2)}
+  .stage-card .btn.ghost{background:var(--panel-2);color:var(--ink);border:1px solid var(--line-2)}
+  .stage-card .btn.ghost:hover{background:var(--panel);border-color:var(--ink-dim);color:var(--ink)}
+  .stage-card .btn.gpx{
+    background:var(--gold);color:var(--ink);
+    box-shadow:0 2px 6px rgba(255,200,64,.3),inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .stage-card .btn.gpx:hover{background:var(--gold-deep);transform:translateY(-1px);box-shadow:0 4px 10px rgba(255,200,64,.4)}
+  .stage-card .btn svg{flex-shrink:0}
+
+  /* ─ Downloads section ─────────────────────────── */
+  .dl-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:32px}
+  .dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .dl-card{
+    position:relative;display:block;padding:20px;background:#fff;border-radius:var(--radius);
+    border:1px solid var(--line-2);box-shadow:var(--shadow);transition:all .2s;
+    text-decoration:none;overflow:hidden;
+  }
+  .dl-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--gold)}
+  .dl-card::before{
+    content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:var(--sky);transition:background .2s;
+  }
+  .dl-card:hover::before{background:var(--gold)}
+  .dl-card[data-k="tour"]::before{background:var(--gold)}
+  .dl-card[data-k="tour"]{background:linear-gradient(135deg, var(--panel) 0%, #fff 100%);border-color:var(--gold)}
+  .dl-card .label{
+    font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-muted);font-weight:600;
+  }
+  .dl-card .title{
+    font-family:var(--display);font-size:17px;font-weight:700;color:var(--ink);margin-top:4px;line-height:1.15;
+  }
+  .dl-card .meta{
+    margin-top:8px;display:flex;gap:10px;font-family:var(--mono);font-size:10px;color:var(--ink-muted);letter-spacing:.05em;
+  }
+  .dl-card .dl-row{
+    margin-top:14px;display:flex;align-items:center;gap:8px;color:var(--sky);font-size:13px;font-weight:600;
+  }
+  .dl-card:hover .dl-row{color:var(--gold-deep)}
+  .dl-card[data-k="tour"] .dl-row{color:var(--gold-deep)}
+  .dl-card .dl-row svg{transition:transform .15s}
+  .dl-card:hover .dl-row svg{transform:translateY(2px)}
 
   /* ─ Map preview section ───────────────────────── */
   .map-preview{
@@ -384,6 +423,7 @@
     </a>
     <div class="nav-links">
       <a href="#stages" data-i18n="nav.stages">Etape</a>
+      <a href="#downloads" data-i18n="nav.downloads">GPX</a>
       <a href="#map" data-i18n="nav.map">Karta</a>
       <a href="#learn" data-i18n="nav.learn">BiH</a>
       <a href="#highlights" data-i18n="nav.highlights">Znamenitosti</a>
@@ -467,8 +507,24 @@
   </div>
 </section>
 
+<!-- ─ Downloads · GPX ─────────────────────────────── -->
+<section id="downloads" class="alt">
+  <div class="container">
+    <div class="dl-head">
+      <div style="max-width:640px">
+        <span class="eyebrow" data-i18n="dl.eye">Preuzmi GPX</span>
+        <h2 style="font-size:clamp(32px,4.5vw,48px);margin-top:12px" data-i18n="dl.h">Svaka etapa, svaki metar — spreman za tvoj bicikl.</h2>
+        <p class="lead" style="font-size:16px;margin-top:14px" data-i18n="dl.lead">
+          Prave cestovne rute (OSRM) sa nadmorskim visinama iz SRTM 30m. Otvori ih u Garmin Connect, Strava, Komoot, Ride With GPS ili bilo kojoj drugoj aplikaciji.
+        </p>
+      </div>
+    </div>
+    <div class="dl-grid" id="dl-grid"></div>
+  </div>
+</section>
+
 <!-- ─ Map preview ─────────────────────────────────── -->
-<section id="map" class="alt">
+<section id="map">
   <div class="container">
     <div class="section-head">
       <span class="eyebrow" data-i18n="mp.eye">Interaktivna karta</span>
@@ -681,7 +737,7 @@
 const I18N = {
   bs: {
     "brand.tag":"Od planina do mora · 2026",
-    "nav.stages":"Etape","nav.map":"Karta","nav.learn":"BiH","nav.highlights":"Znamenitosti","nav.embed":"Embed",
+    "nav.stages":"Etape","nav.downloads":"GPX","nav.map":"Karta","nav.learn":"BiH","nav.highlights":"Znamenitosti","nav.embed":"Embed",
     "hero.tag":"2026 · 5 etapa · 140+ biciklista",
     "hero.t1":"Tour of","hero.t2":"Bosnia & Herzegovina",
     "hero.sub":"Od planina do mora — priča jedne zemlje ispričana kroz 217 kilometara pedaliranja od Sarajeva, preko UNESCO mostova i divljeg krša, do Jadrana u Neumu.",
@@ -716,6 +772,11 @@ const I18N = {
     "cta.h":"Ugradi kartu na svoj sajt.",
     "cta.p":"Turističke zajednice, sajtovi klubova, portali za gradove na trasi — samo zalijepi jedan iframe i cijela trka se otvara vašoj publici. Besplatno, s punom funkcionalnošću.",
     "cta.open":"Otvori dashboard","cta.gpx":"Preuzmi cijelu trasu (GPX)",
+    "dl.eye":"Preuzmi GPX",
+    "dl.h":"Svaka etapa, svaki metar — spreman za tvoj bicikl.",
+    "dl.lead":"Prave cestovne rute (OSRM) sa nadmorskim visinama iz SRTM 30m. Otvori ih u Garmin Connect, Strava, Komoot, Ride With GPS ili bilo kojoj drugoj aplikaciji.",
+    "dl.stage":"Etapa","dl.tour":"Cijela trasa","dl.download":"Preuzmi GPX",
+    "dl.points":"tačaka","dl.size":"KB",
     "foot.desc":"Interaktivni sajt i embed karta izrađeni za biciklističku zajednicu BiH i organizatore trke. Sve otvoreno — OSM podaci, SRTM visine, MapLibre render.",
     "foot.race":"Trka","foot.stages":"Etape","foot.map":"Interaktivna karta","foot.gpx":"Cijela trasa GPX",
     "foot.bih":"Bosna i Hercegovina","foot.geo":"Geografija & klime","foot.herit":"UNESCO baština",
@@ -724,7 +785,7 @@ const I18N = {
   },
   en: {
     "brand.tag":"From Mountains to Sea · 2026",
-    "nav.stages":"Stages","nav.map":"Map","nav.learn":"BiH","nav.highlights":"Highlights","nav.embed":"Embed",
+    "nav.stages":"Stages","nav.downloads":"GPX","nav.map":"Map","nav.learn":"BiH","nav.highlights":"Highlights","nav.embed":"Embed",
     "hero.tag":"2026 · 5 stages · 140+ riders",
     "hero.t1":"Tour of","hero.t2":"Bosnia & Herzegovina",
     "hero.sub":"From mountains to the sea — a whole country's story told across 217 kilometres of pedalling from Sarajevo, over UNESCO bridges and wild karst, down to the Adriatic at Neum.",
@@ -759,6 +820,11 @@ const I18N = {
     "cta.h":"Embed the map on your site.",
     "cta.p":"Tourism boards, club sites, municipal portals on the route — just paste a single iframe and the whole race opens to your audience. Free, full-featured.",
     "cta.open":"Open dashboard","cta.gpx":"Download whole route (GPX)",
+    "dl.eye":"Download GPX",
+    "dl.h":"Every stage, every metre — ready for your bike.",
+    "dl.lead":"Real road routes (OSRM) with SRTM 30 m elevations. Open in Garmin Connect, Strava, Komoot, Ride With GPS, or any other cycling app.",
+    "dl.stage":"Stage","dl.tour":"Whole tour","dl.download":"Download GPX",
+    "dl.points":"points","dl.size":"KB",
     "foot.desc":"Interactive site and embed map built for the BiH cycling community and the race organisers. Fully open — OSM data, SRTM elevations, MapLibre renderer.",
     "foot.race":"Race","foot.stages":"Stages","foot.map":"Interactive map","foot.gpx":"Whole-route GPX",
     "foot.bih":"Bosnia & Herzegovina","foot.geo":"Geography & climates","foot.herit":"UNESCO heritage",
@@ -775,8 +841,8 @@ function applyI18n(){
     if (v==null) return;
     if (/<\w+/.test(v)) el.innerHTML = v; else el.textContent = v;
   });
-  // update the "View on map" inside stage cards
   renderStages();
+  renderDownloads();
 }
 
 /* ─────────────────────────────────────────────────────
@@ -848,13 +914,13 @@ function renderStages(){
               <div class="v" style="color:var(--gold-deep);display:inline-flex;gap:1px;align-items:center;margin-top:6px">${stars}</div>
             </div>
           </div>
-          <div class="gpx">
-            <a href="map.html#${s.key}">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 C7 2 4 6 4 10 c0 5 8 12 8 12 s8-7 8-12 c0-4-3-8-8-8z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <div class="actions">
+            <a class="btn ghost" href="map.html#${s.key}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 C7 2 4 6 4 10 c0 5 8 12 8 12 s8-7 8-12 c0-4-3-8-8-8z"/><circle cx="12" cy="10" r="2.5"/></svg>
               ${t("st.ride")}
             </a>
-            <a href="gpx/${s.key}.gpx" download>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L12 15 M7 10 L12 15 L17 10 M5 21 L19 21"/></svg>
+            <a class="btn gpx" href="gpx/${s.key}.gpx" download>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L12 15 M7 10 L12 15 L17 10 M5 21 L19 21"/></svg>
               ${t("st.gpx")}
             </a>
           </div>
@@ -863,6 +929,52 @@ function renderStages(){
   }).join("");
 }
 function escapeHtml(s){ return (s||"").toString().replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]); }
+
+/* ─────────────────────────────────────────────────────
+   Downloads section — 5 stages + full tour
+   ───────────────────────────────────────────────────── */
+// Approx sizes in KB (measured at build time — refreshed on any regen)
+const GPX_SIZES = {
+  stage1:12.3, stage2:12.3, stage3:12.7, stage4:12.8, stage5:12.6, tour_complete:60.5,
+};
+function renderDownloads(){
+  const grid = document.getElementById("dl-grid");
+  if (!grid) return;
+  const arrow = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L12 15 M7 10 L12 15 L17 10 M5 21 L19 21"/></svg>`;
+  const cards = STAGE_META.map(s=>{
+    const st = ROUTE_STATS[s.key] || {};
+    const pts = (st.km)? Math.round((st.km||0)*3.5) : "—"; // rough estimate
+    const size = GPX_SIZES[s.key] || "—";
+    const route = LANG==="bs" ? s.routeBs : s.routeEn;
+    return `<a class="dl-card" data-k="${s.key}" href="gpx/${s.key}.gpx" download>
+      <div class="label">${t("dl.stage")} ${s.num}</div>
+      <div class="title">${escapeHtml(route)}</div>
+      <div class="meta">
+        <span>${st.km ?? "—"} km</span>
+        <span>·</span>
+        <span>${st.gain_m ?? "—"} m ↑</span>
+        <span>·</span>
+        <span>${size} ${t("dl.size")}</span>
+      </div>
+      <div class="dl-row">${arrow}<span>${t("dl.download")}</span></div>
+    </a>`;
+  }).join("");
+  const tourKm = Object.values(ROUTE_STATS).reduce((a,v)=>a+(v.km||0),0).toFixed(1);
+  const tourGain = Object.values(ROUTE_STATS).reduce((a,v)=>a+(v.gain_m||0),0);
+  const tourCard = `<a class="dl-card" data-k="tour" href="gpx/tour_complete.gpx" download>
+    <div class="label">★ ${t("dl.tour")}</div>
+    <div class="title">Sarajevo → Neum</div>
+    <div class="meta">
+      <span>${tourKm} km</span>
+      <span>·</span>
+      <span>${tourGain} m ↑</span>
+      <span>·</span>
+      <span>${GPX_SIZES.tour_complete} ${t("dl.size")}</span>
+    </div>
+    <div class="dl-row">${arrow}<span>${t("dl.download")}</span></div>
+  </a>`;
+  grid.innerHTML = cards + tourCard;
+}
 
 /* ─────────────────────────────────────────────────────
    Language toggle

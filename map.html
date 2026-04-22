@@ -270,6 +270,13 @@
   .act-btn:hover{background:var(--panel-3);color:var(--ink);border-color:var(--line-3)}
   .act-btn.round{padding:8px;width:32px;height:32px;justify-content:center}
   .act-btn svg{color:var(--amber)}
+  .act-btn.primary{
+    background:var(--amber);color:#1a2a40;border-color:var(--amber);font-weight:700;
+    box-shadow:0 2px 8px rgba(255,200,64,.3);
+  }
+  .act-btn.primary svg{color:#1a2a40}
+  .act-btn.primary:hover{background:var(--amber-deep);border-color:var(--amber-deep);color:#fff}
+  .act-btn.primary:hover svg{color:#fff}
 
   /* ─ Custom markers ────────────────────────────────── */
   .mk{
@@ -501,7 +508,7 @@
     </div>
 
     <div class="strip-actions">
-      <button class="act-btn" id="act-gpx" title="Download GPX">
+      <button class="act-btn primary" id="act-gpx" title="Download GPX">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L12 15 M7 10 L12 15 L17 10 M5 21 L19 21"/></svg>
         <span data-i18n="act.gpx">Download GPX</span>
       </button>
@@ -1391,28 +1398,18 @@ function wireUI(){
     }
   });
 
-  // Actions
+  // Actions — download the pre-built GPX for the active stage
   document.getElementById("act-gpx").addEventListener("click",()=>{
     if(!state.active)return;
-    // Export the active stage as GPX on-the-fly
-    const meta=ROUTE_META[state.active.key]||{};
-    const title=(meta.title?.en || state.active.name).replace(/[^\w]+/g,"_");
-    const now=new Date().toISOString();
-    const trkpts=state.active.coords.map(c=>
-      `<trkpt lat="${c[1]}" lon="${c[0]}"><ele>${c[2]}</ele></trkpt>`).join("");
-    const gpx=`<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="Tour of BiH · Bozmaps" xmlns="http://www.topografix.com/GPX/1/1">
-<metadata><name>${title}</name><time>${now}</time></metadata>
-<trk><name>${title}</name><trkseg>${trkpts}</trkseg></trk>
-</gpx>`;
-    const blob=new Blob([gpx],{type:"application/gpx+xml"});
-    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=title+".gpx"; a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    const a=document.createElement("a");
+    a.href=`gpx/${state.active.key}.gpx`;
+    a.download=`Tour_of_BiH_${state.active.key}.gpx`;
+    a.click();
   });
   document.getElementById("act-share").addEventListener("click",async()=>{
-    const shareData={title:"Putevi Sokola MTB",text:"Falcon's Paths — MTB Marathon 2026",url:location.href};
+    const shareData={title:"Tour of Bosnia and Herzegovina",text:"Od planina do mora — 5 etapa od Sarajeva do Neuma",url:location.href};
     try{ if(navigator.share)await navigator.share(shareData);
-      else { await navigator.clipboard.writeText(location.href); toast(LANG==="sr"?"Link kopiran":"Link copied"); } }
+      else { await navigator.clipboard.writeText(location.href); toast(LANG==="bs"?"Link kopiran":"Link copied"); } }
     catch(_){}
   });
   document.getElementById("act-info").addEventListener("click",()=>{
