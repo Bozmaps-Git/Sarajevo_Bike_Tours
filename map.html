@@ -3,602 +3,673 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tour of Bosnia &amp; Herzegovina · Interactive Race Dashboard</title>
-<meta name="description" content="Interactive race dashboard for the Tour of Bosnia and Herzegovina — five stages from Sarajevo through Konjic, Jablanica, Mostar, Ljubuški and Stolac to Neum. Routes, elevation, aid stations, UNESCO heritage and tourism along the corridor." />
-<meta name="theme-color" content="#0f1624" />
-<meta property="og:title" content="Tour of Bosnia &amp; Herzegovina · 5 Stages · Sarajevo → Neum" />
-<meta property="og:description" content="From alpine passes to the Adriatic coast — an interactive map of the Tour of BiH race route with aid stations, UNESCO sites and tourist highlights." />
+<title>Tour of Bosnia &amp; Herzegovina · Interactive Map</title>
+<meta name="description" content="Explore the 2026 Tour of Bosnia and Herzegovina race route from Sarajevo to Neum — 5 stages with UNESCO heritage, viewpoints and Adriatic finale." />
+<meta name="theme-color" content="#1a3d5c" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
 
 <style>
   :root{
-    --bg:#0f1624;
-    --panel:#18213a;
-    --panel-2:#1f2b48;
-    --panel-3:#2a3a5f;
-    --ink:#ecf0f8;
-    --ink-2:#d4dae8;
-    --dim:#8a97b0;
-    --muted:#6b7890;
-    --line:rgba(236,240,248,.08);
-    --line-2:rgba(236,240,248,.14);
-    --line-3:rgba(236,240,248,.22);
-    --amber:#ffc840;
-    --amber-deep:#e6a820;
-    --amber-soft:rgba(255,200,64,.14);
-    --green:#5cc97d;
-    --red:#e67272;
-    --blue:#4a8ed8;
-    --shadow:0 4px 16px rgba(0,0,0,.45),0 1px 3px rgba(0,0,0,.25);
-    --shadow-lg:0 14px 40px rgba(0,0,0,.6),0 2px 8px rgba(0,0,0,.3);
+    --sky:#1a3d5c;
+    --sky-2:#245478;
+    --sky-3:#3a7ab3;
+    --ink:#0f1624;
+    --ink-2:#2a2f3c;
+    --dim:#6b7890;
+    --muted:#9aa0b0;
+    --panel:#ffffff;
+    --panel-2:#f5f1e6;
+    --cream:#faf6eb;
+    --line:rgba(15,22,36,.08);
+    --line-2:rgba(15,22,36,.14);
+    --line-3:rgba(15,22,36,.22);
+    --gold:#ffc840;
+    --gold-deep:#e8a820;
+    --route:#d64545;
+    --route-dim:rgba(214,69,69,.28);
+    --green:#5a8a3a;
+    --shadow:0 4px 14px rgba(15,22,36,.10), 0 1px 3px rgba(15,22,36,.06);
+    --shadow-lg:0 14px 36px rgba(15,22,36,.16), 0 4px 10px rgba(15,22,36,.06);
     --radius:10px;
     --radius-sm:6px;
     --display:"Fraunces",Georgia,serif;
     --sans:"Inter",-apple-system,"Segoe UI",Roboto,sans-serif;
     --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
-
-    /* layout */
-    --h-header:56px;
-    --h-strip:108px;
-    --w-panel:320px;
+    --h-header:52px;
+    --h-strip:110px;
+    --w-side:340px;
   }
 
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow:hidden}
+  html,body{height:100%;background:var(--cream);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  body{overflow:hidden}
   button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   a{color:inherit;text-decoration:none}
-  .mono{font-family:var(--mono)}
-  .tnum{font-variant-numeric:tabular-nums}
 
-  /* ─ Shell ─────────────────────────────────────────── */
-  #app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg)}
+  /* ─ Shell ──────────────────────────────────────── */
+  #app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--cream)}
 
-  /* ─ Header ────────────────────────────────────────── */
+  /* ─ Top header ─────────────────────────────────── */
   header.topbar{
     flex-shrink:0;height:var(--h-header);
-    position:relative;overflow:hidden;
-    display:flex;align-items:center;padding:0 20px;gap:16px;
-    border-bottom:1px solid var(--line);z-index:20;
+    display:flex;align-items:center;padding:0 14px;gap:10px;
+    background:var(--panel);border-bottom:1px solid var(--line);z-index:30;
   }
-  header.topbar::before{
-    content:"";position:absolute;inset:0;z-index:-2;
-    background:
-      linear-gradient(90deg, rgba(74,142,216,.18) 0%, rgba(15,22,36,.3) 40%, rgba(255,200,64,.10) 100%),
-      linear-gradient(180deg, #1a2a48 0%, #131e35 60%, #0f1624 100%);
-  }
-  header.topbar::after{
-    content:"";position:absolute;inset:0;z-index:-1;opacity:.55;
-    background-image:
-      /* far dinaric ridge */
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='60' viewBox='0 0 1600 60' preserveAspectRatio='none'><path fill='rgba(40,55,90,.85)' d='M0,60 L0,30 L70,18 L150,32 L220,10 L300,24 L380,14 L460,26 L540,12 L620,22 L700,8 L780,20 L860,14 L940,26 L1020,18 L1100,30 L1180,16 L1260,26 L1340,14 L1420,24 L1500,18 L1580,28 L1600,22 L1600,60 Z'/></svg>"),
-      /* near ridge */
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='60' viewBox='0 0 1600 60' preserveAspectRatio='none'><path fill='rgba(20,30,52,.9)' d='M0,60 L0,42 L60,28 L140,44 L210,26 L300,40 L380,30 L460,46 L540,32 L630,44 L710,30 L800,42 L880,34 L970,48 L1050,34 L1140,46 L1230,32 L1320,44 L1390,34 L1470,42 L1560,36 L1600,42 L1600,60 Z'/></svg>");
-    background-position:0 100%,0 100%;
-    background-repeat:no-repeat;background-size:100% 100%,100% 100%;
-    mix-blend-mode:normal;
-  }
-  .brand{display:flex;align-items:center;gap:10px;min-width:0}
-  .brand .mark{
-    width:36px;height:36px;flex-shrink:0;border-radius:8px;
-    background:linear-gradient(135deg, #4a8ed8 0%, #2a5caa 50%, #ffc840 100%);
+  .brand-min{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .brand-min .mark{
+    width:30px;height:30px;border-radius:6px;flex-shrink:0;
+    background:linear-gradient(135deg, var(--sky-3) 0%, var(--sky) 60%, var(--gold) 100%);
     display:flex;align-items:center;justify-content:center;color:#fff;
-    box-shadow:0 2px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.25);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
   }
-  .brand .name{
-    font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:.02em;
-    color:var(--ink);text-transform:uppercase;line-height:1;white-space:nowrap;
-    text-shadow:0 1px 2px rgba(0,0,0,.6);
+  .brand-min .nm{font-family:var(--display);font-weight:700;font-size:13px;color:var(--ink);letter-spacing:.01em;white-space:nowrap}
+  .stage-picker{display:flex;gap:4px;padding:4px;background:var(--panel-2);border-radius:8px;overflow-x:auto;scrollbar-width:none}
+  .stage-picker::-webkit-scrollbar{display:none}
+  .stage-picker button{
+    padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;font-weight:600;
+    color:var(--dim);border-radius:5px;transition:all .12s;white-space:nowrap;
   }
-  .brand .name em{font-style:normal;color:var(--amber)}
-  .brand .tag{
-    margin-top:3px;font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--amber);text-transform:uppercase;
+  .stage-picker button:hover{color:var(--ink);background:rgba(15,22,36,.04)}
+  .stage-picker button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(15,22,36,.08)}
+  .stage-picker button.on .dot{background:var(--route)}
+  .stage-picker button .dot{
+    display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);margin-right:5px;vertical-align:middle;
   }
-  .topnav{display:flex;align-items:center;gap:2px;margin-left:auto}
-  .topnav button{
-    padding:8px 14px;font-family:var(--sans);font-size:13px;font-weight:500;
-    color:var(--dim);border-radius:6px;transition:all .15s;display:flex;align-items:center;gap:6px;
-  }
-  .topnav button:hover{color:var(--ink);background:rgba(244,236,224,.06)}
-  .topnav button.on{color:var(--ink);background:rgba(244,236,224,.08)}
-  .topnav button.on::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--amber)}
-  .topnav .sep{width:1px;height:18px;background:var(--line-2);margin:0 4px}
-  .lang-pill{
-    display:flex;background:rgba(20,16,12,.5);border:1px solid var(--line-2);border-radius:4px;overflow:hidden;
-    margin-left:8px;
-  }
+  .spacer{flex:1}
+  .lang-pill{display:flex;background:var(--panel-2);border-radius:6px;overflow:hidden;padding:2px;gap:1px}
   .lang-pill button{
-    padding:4px 8px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim);
+    padding:4px 8px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim);border-radius:4px;
   }
-  .lang-pill button.on{background:var(--amber-soft);color:var(--amber)}
+  .lang-pill button.on{background:var(--panel);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(15,22,36,.1)}
+  .back-link{
+    padding:5px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--sky);
+    text-transform:uppercase;font-weight:600;white-space:nowrap;
+  }
+  .back-link:hover{color:var(--sky-2)}
 
-  /* ─ Map wrap ──────────────────────────────────────── */
+  /* ─ Main body ──────────────────────────────────── */
   .body{position:relative;flex:1;min-height:0;display:flex}
   #map{position:absolute;inset:0}
 
-  /* ─ Layer pill bar (top center of map) ───────────── */
-  .layer-bar{
-    position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:10;
-    display:flex;background:rgba(30,24,18,.92);border:1px solid var(--line-2);border-radius:10px;padding:4px;
-    box-shadow:var(--shadow);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  }
-  .layer-pill{
-    display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:7px;
-    font-family:var(--sans);font-size:12.5px;font-weight:500;color:var(--dim);
-    transition:all .15s;white-space:nowrap;
-  }
-  .layer-pill:hover{color:var(--ink);background:rgba(244,236,224,.04)}
-  .layer-pill.on{color:var(--ink);background:rgba(244,236,224,.08);box-shadow:inset 0 0 0 1px var(--line-3)}
-  .layer-pill svg{flex-shrink:0}
-  .layer-pill .ico{width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:3px}
-  .layer-pill[data-k="staze"] .ico{background:#3a5a2a;color:#c8e6a8}
-  .layer-pill[data-k="poi"] .ico{background:#2a4a6a;color:#a8d0e8}
-  .layer-pill[data-k="reljef"] .ico{background:#6a4a2a;color:#e8c8a8}
-  .layer-pill[data-k="topo"] .ico{background:#3a2a2a;color:#e8b8a8}
-  .layer-pill .chev{opacity:.5;margin-left:2px}
-
-  /* popover */
-  .pop-anchor{position:relative}
-  .popover{
-    position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);
-    min-width:220px;background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:6px;
-    box-shadow:var(--shadow-lg);z-index:30;display:none;
-  }
-  .popover.on{display:block}
-  .popover .row{
-    display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--dim);
-    transition:all .12s;
-  }
-  .popover .row:hover{background:rgba(244,236,224,.04);color:var(--ink)}
-  .popover .row.on{color:var(--ink)}
-  .popover .row .chk{
-    width:16px;height:16px;border-radius:4px;border:1.5px solid var(--line-3);flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;
-  }
-  .popover .row.on .chk{background:var(--amber);border-color:var(--amber)}
-  .popover .row.on .chk::after{content:"";width:4px;height:8px;border:solid #1f1410;border-width:0 1.5px 1.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
-  .popover .row .sw{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-  .popover .row .lbl{flex:1}
-  .popover hr{border:none;height:1px;background:var(--line);margin:4px 2px}
-
-  /* ─ Right panel ────────────────────────────────────── */
-  .side{
-    position:absolute;top:14px;right:14px;bottom:14px;width:var(--w-panel);z-index:9;
-    background:rgba(30,24,18,.96);border:1px solid var(--line-2);border-radius:10px;
-    box-shadow:var(--shadow-lg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-    display:flex;flex-direction:column;overflow:hidden;
+  /* ─ Side panel ─────────────────────────────────── */
+  aside.side{
+    position:absolute;top:12px;right:12px;bottom:calc(var(--h-strip) + 12px);
+    width:var(--w-side);z-index:10;
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;
+    transition:transform .25s;
   }
   .side-head{
-    padding:16px 18px 12px;border-bottom:1px solid var(--line);
+    padding:14px 16px 12px;border-bottom:1px solid var(--line);position:relative;
   }
-  .side-head h3{
-    font-family:var(--display);font-size:18px;font-weight:500;color:var(--ink);letter-spacing:-.01em;
+  .side-head .eye{
+    font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:6px;
   }
-  .side-body{flex:1;overflow-y:auto;padding:14px 18px 18px}
+  .side-head .eye .dot{width:7px;height:7px;border-radius:50%;background:var(--route)}
+  .side-head h2{
+    margin-top:6px;font-family:var(--display);font-size:20px;font-weight:600;color:var(--ink);line-height:1.15;letter-spacing:-.01em;
+  }
+  .side-head .stats{
+    margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;font-variant-numeric:tabular-nums;
+  }
+  .side-head .stats .s{display:flex;flex-direction:column;gap:2px}
+  .side-head .stats .k{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+  .side-head .stats .v{font-family:var(--display);font-size:17px;font-weight:600;color:var(--ink)}
+  .side-head .stats .v small{font-family:var(--sans);font-size:11px;color:var(--dim);font-weight:400;margin-left:2px}
+  .side-head .stars{color:var(--gold-deep);display:inline-flex;gap:1px;margin-top:2px}
+  .side-head .stars svg{width:11px;height:11px}
 
-  /* Info panel content */
-  .r-title{font-family:var(--display);font-size:24px;font-weight:700;color:var(--amber);letter-spacing:-.015em;margin-bottom:12px}
-  .r-stats{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
-  .r-stats .row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-  .r-stats .k{font-family:var(--sans);font-size:13px;color:var(--dim)}
-  .r-stats .v{font-family:var(--display);font-size:18px;color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
-  .r-stats .v small{font-family:var(--sans);font-size:12px;color:var(--dim);font-weight:400;margin-left:2px}
-  .stars{display:inline-flex;gap:2px;color:var(--amber)}
-  .stars svg{width:14px;height:14px}
-  .divider{height:1px;background:var(--line);margin:12px 0}
-  .bullet-list{list-style:none;padding:0;margin:0}
-  .bullet-list li{
-    display:flex;align-items:flex-start;gap:8px;padding:6px 0;
-    font-size:13.5px;color:var(--ink-2);line-height:1.4;
-  }
-  .bullet-list li::before{
-    content:"";width:6px;height:6px;border-radius:50%;background:var(--amber);margin-top:8px;flex-shrink:0;
-  }
-  .route-switch{
-    display:flex;background:var(--bg);border:1px solid var(--line-2);border-radius:6px;padding:2px;margin-top:14px;
-  }
-  .route-switch button{
-    flex:1;padding:7px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
-    border-radius:4px;transition:all .12s;
-  }
-  .route-switch button.on{background:var(--amber);color:#1f1410;font-weight:600}
+  .side-body{flex:1;overflow-y:auto}
+  .side-sub{padding:12px 16px 6px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;font-weight:600}
 
-  /* Gallery */
-  .gallery-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .gal-item{
-    aspect-ratio:4/3;border-radius:6px;overflow:hidden;position:relative;background:var(--panel-2);
-    display:flex;align-items:center;justify-content:center;
+  .hl-list{list-style:none;padding:0 10px 12px;margin:0}
+  .hl-item{
+    display:flex;gap:10px;padding:10px 8px;border-radius:var(--radius-sm);cursor:pointer;
+    transition:background .12s;position:relative;
   }
-  .gal-item .ph{
-    position:absolute;inset:0;
-    background:
-      linear-gradient(135deg, rgba(200,115,42,.15), rgba(60,40,25,.6)),
-      radial-gradient(circle at 30% 30%, #5a3a22, #1f1610 70%);
+  .hl-item:hover{background:var(--panel-2)}
+  .hl-item.active{background:rgba(26,61,92,.08)}
+  .hl-item .num{
+    flex-shrink:0;width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+    background:var(--panel-2);border:1.5px solid var(--line-2);border-radius:50%;
+    font-family:var(--mono);font-size:10px;font-weight:700;color:var(--ink);
   }
-  .gal-item .lbl{position:relative;z-index:2;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);text-align:center;padding:6px}
+  .hl-item.start .num{background:var(--green);border-color:var(--green);color:#fff}
+  .hl-item.finish .num{background:var(--route);border-color:var(--route);color:#fff}
+  .hl-item.unesco .num{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+  .hl-item.viewpoint .num{background:#5cc97d;border-color:#5cc97d;color:#fff}
+  .hl-item.culture .num{background:#8a5eb8;border-color:#8a5eb8;color:#fff}
+  .hl-item.nature .num{background:#4a8ed8;border-color:#4a8ed8;color:#fff}
+  .hl-item.aid .num{background:var(--sky);border-color:var(--sky);color:#fff}
+  .hl-item.history .num{background:#a8712a;border-color:#a8712a;color:#fff}
+  .hl-item .txt{flex:1;min-width:0}
+  .hl-item .nm{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.25}
+  .hl-item .sub{margin-top:3px;font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.04em}
+  .hl-item .sub .tag{color:var(--sky);font-weight:600}
+  .hl-item .desc{margin-top:6px;font-size:12.5px;color:var(--ink-2);line-height:1.5}
 
-  /* Contacts */
-  .contact-block{margin-bottom:14px}
-  .contact-block .h{
-    font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin-bottom:6px;
+  .side-foot{
+    padding:12px 14px;border-top:1px solid var(--line);background:var(--panel-2);
+    display:flex;gap:8px;
   }
-  .contact-block a,.contact-block .v{
-    display:block;font-size:13.5px;color:var(--ink-2);margin-bottom:3px;
+  .side-foot .btn{
+    flex:1;padding:9px 10px;border-radius:var(--radius-sm);
+    font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:5px;
+    transition:all .12s;
   }
-  .contact-block a:hover{color:var(--amber)}
+  .side-foot .btn.primary{
+    background:var(--gold);color:var(--ink);
+    box-shadow:0 1px 3px rgba(255,200,64,.3),inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .side-foot .btn.primary:hover{background:var(--gold-deep)}
+  .side-foot .btn.ghost{background:var(--panel);color:var(--ink-2);border:1px solid var(--line-2)}
+  .side-foot .btn.ghost:hover{background:var(--panel-2)}
 
-  /* ─ Elevation strip (bottom) ──────────────────────── */
+  /* ─ Floating controls (top-right-ish, left of side panel) ─ */
+  .ctrl-group{
+    position:absolute;top:14px;left:14px;z-index:10;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .ctrl{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    box-shadow:var(--shadow);padding:3px;display:flex;
+  }
+  .ctrl button{
+    padding:6px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dim);
+    border-radius:5px;transition:all .12s;font-weight:600;text-transform:uppercase;
+  }
+  .ctrl button:hover{color:var(--ink)}
+  .ctrl button.on{background:var(--sky);color:#fff}
+
+  /* ─ Elevation strip ────────────────────────────── */
   .strip{
-    flex-shrink:0;height:var(--h-strip);border-top:1px solid var(--line);background:var(--panel);
-    display:flex;align-items:stretch;padding:10px 14px 10px 16px;gap:12px;position:relative;z-index:15;
+    flex-shrink:0;height:var(--h-strip);background:var(--panel);
+    border-top:1px solid var(--line);padding:10px 16px 10px;
+    display:flex;flex-direction:column;position:relative;z-index:15;
   }
-  .strip-prof{flex:1;display:flex;flex-direction:column;min-width:0}
-  .strip-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .strip-head{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;
+  }
   .strip-head .ttl{
-    display:flex;align-items:center;gap:6px;
-    font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);
+    display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink);text-transform:uppercase;font-weight:600;
   }
-  .strip-head .ttl svg{color:var(--amber)}
-  .strip-head .sub{font-family:var(--sans);font-size:11px;color:var(--dim);margin-left:auto;font-variant-numeric:tabular-nums}
-  .prof-wrap{flex:1;position:relative;min-height:0}
-  #elev-svg{display:block;width:100%;height:100%;cursor:crosshair}
-  .axis{position:absolute;left:0;right:0;bottom:-2px;display:flex;justify-content:space-between;padding:0 4px;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;pointer-events:none}
-  .y-axis{position:absolute;left:2px;top:0;bottom:10px;display:flex;flex-direction:column;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;pointer-events:none}
+  .strip-head .ttl svg{color:var(--route)}
+  .strip-head .sub{font-family:var(--sans);font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .prof-wrap{flex:1;position:relative;min-height:0;margin-top:2px}
+  #elev-svg{width:100%;height:100%;display:block;cursor:crosshair}
+  .y-axis{position:absolute;left:0;top:0;bottom:14px;display:flex;flex-direction:column;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em;pointer-events:none;padding-top:2px}
+  .x-axis{position:absolute;left:0;right:0;bottom:-2px;display:flex;justify-content:space-between;padding:0 2px;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em;pointer-events:none}
+  #prof-cur{position:absolute;top:0;bottom:14px;width:1px;background:var(--route);opacity:0;pointer-events:none;transition:opacity .1s}
   #prof-tip{
-    position:absolute;transform:translate(-50%,-110%);
-    background:var(--panel-2);border:1px solid var(--line-3);border-radius:4px;padding:5px 8px;
-    font-family:var(--mono);font-size:11px;color:var(--ink);letter-spacing:.04em;white-space:nowrap;
-    pointer-events:none;opacity:0;transition:opacity .1s;z-index:2;
+    position:absolute;transform:translate(-50%,-110%);z-index:3;
+    background:var(--ink);color:#fff;border-radius:5px;padding:5px 9px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.04em;white-space:nowrap;
+    pointer-events:none;opacity:0;transition:opacity .1s;
   }
   #prof-tip::after{
     content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);
-    border:4px solid transparent;border-top-color:var(--panel-2);
-  }
-  #prof-cur{position:absolute;top:0;bottom:0;width:1px;background:var(--amber);opacity:0;pointer-events:none}
-  .strip-actions{
-    display:flex;align-items:flex-end;gap:6px;flex-shrink:0;
-  }
-  .act-btn{
-    display:flex;align-items:center;gap:6px;padding:8px 12px;
-    background:var(--panel-2);border:1px solid var(--line-2);border-radius:6px;
-    font-family:var(--sans);font-size:12px;font-weight:500;color:var(--ink-2);
-    transition:all .15s;
-  }
-  .act-btn:hover{background:var(--panel-3);color:var(--ink);border-color:var(--line-3)}
-  .act-btn.round{padding:8px;width:32px;height:32px;justify-content:center}
-  .act-btn svg{color:var(--amber)}
-  .act-btn.primary{
-    background:var(--amber);color:#1a2a40;border-color:var(--amber);font-weight:700;
-    box-shadow:0 2px 8px rgba(255,200,64,.3);
-  }
-  .act-btn.primary svg{color:#1a2a40}
-  .act-btn.primary:hover{background:var(--amber-deep);border-color:var(--amber-deep);color:#fff}
-  .act-btn.primary:hover svg{color:#fff}
-
-  /* ─ Custom markers ────────────────────────────────── */
-  .mk{
-    position:relative;
-    display:flex;align-items:center;gap:6px;
-    background:rgba(30,24,18,.98);border:1px solid var(--line-3);border-radius:4px;
-    padding:4px 9px 4px 4px;
-    font-family:var(--sans);font-size:11px;font-weight:600;color:var(--ink);
-    box-shadow:0 2px 6px rgba(0,0,0,.45);
-    white-space:nowrap;cursor:pointer;transition:transform .12s;
-    transform-origin:bottom center;
-  }
-  .mk:hover{transform:scale(1.05)}
-  .mk .mico{
-    width:20px;height:20px;border-radius:3px;
-    display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;
-  }
-  .mk.start{background:rgba(26,40,20,.98);border-color:#4a7a30}
-  .mk.start .mico{background:#5a8a3a}
-  .mk.finish{background:rgba(40,20,20,.98);border-color:#a0453a}
-  .mk.finish .mico{background:#c8453a}
-  .mk.checkpoint{background:rgba(20,34,44,.98);border-color:#4a7a94}
-  .mk.checkpoint .mico{background:#2a88c8}
-  .mk.viewpoint{background:rgba(26,40,20,.98);border-color:#5a7a3a}
-  .mk.viewpoint .mico{background:#5a8a3a}
-  .mk.medical{background:rgba(40,20,20,.98);border-color:#a0453a}
-  .mk.medical .mico{background:#e06666}
-  .mk.video{background:rgba(30,26,14,.98);border-color:#a88830;color:var(--amber)}
-  .mk.video .mico{background:#c89020;color:#2a1e10}
-  .mk.finish-tourist{background:rgba(30,26,14,.98);border-color:#a88830;color:var(--amber)}
-  .mk.finish-tourist .mico{background:#c89020;color:#2a1e10}
-  .mk::after{
-    content:"";position:absolute;top:100%;left:10px;
-    border:6px solid transparent;border-top-color:currentColor;opacity:.4;
+    border:4px solid transparent;border-top-color:var(--ink);
   }
 
-  /* OSM POI dots */
-  .poi-dot-outer{
-    width:22px;height:22px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.35);
-    display:flex;align-items:center;justify-content:center;cursor:pointer;
-    transition:transform .12s;
-  }
-  .poi-dot-outer:hover{transform:scale(1.15)}
-  .poi-dot-inner{width:12px;height:12px;border-radius:50%}
-
-  /* ─ Rich POI popup ────────────────────────────────── */
-  .maplibregl-popup-content{
-    background:var(--panel)!important;color:var(--ink)!important;
-    border:1px solid var(--line-2)!important;border-radius:8px!important;
-    padding:0!important;box-shadow:var(--shadow-lg)!important;
-    font-family:var(--sans)!important;max-width:270px;overflow:hidden;
-  }
-  .maplibregl-popup-tip{border-top-color:var(--panel)!important;border-bottom-color:var(--panel)!important}
-  .maplibregl-popup-close-button{color:var(--dim)!important;font-size:18px!important;padding:2px 7px!important;z-index:3}
-  .rp{display:flex;flex-direction:column}
-  .rp .hero{
-    height:96px;position:relative;overflow:hidden;
-    background:
-      linear-gradient(180deg,rgba(30,24,18,0) 0%,rgba(30,24,18,.8) 100%),
-      linear-gradient(135deg, #6a4a2a, #3a1f10),
-      radial-gradient(circle at 30% 40%, rgba(232,165,92,.4), transparent 60%);
-  }
-  .rp .hero .tag{
-    position:absolute;top:8px;left:8px;padding:3px 8px;border-radius:3px;
-    background:rgba(20,16,12,.75);border:1px solid var(--line-2);
-    font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
-    display:flex;align-items:center;gap:5px;color:var(--ink);
-  }
-  .rp .hero .tag .sw{width:7px;height:7px;border-radius:50%}
-  .rp .body{padding:10px 14px 12px}
-  .rp .nm{font-family:var(--display);font-size:16px;font-weight:600;color:var(--ink);line-height:1.2;margin-bottom:4px}
-  .rp .ty{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim);margin-bottom:8px}
-  .rp .meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-bottom:8px}
-  .rp .meta .k{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
-  .rp .meta .v{font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums}
-  .rp .cta{
-    display:flex;align-items:center;gap:6px;padding:6px 10px;width:100%;justify-content:center;
-    background:var(--amber);color:#1f1410;border-radius:4px;font-weight:600;font-size:11.5px;
-    letter-spacing:.02em;transition:all .15s;
-  }
-  .rp .cta:hover{background:var(--amber-deep);color:#fff}
-  .rp .cta.yt{background:#e84a3c;color:#fff}
-  .rp .cta.yt:hover{background:#c8342a}
-
-  /* ─ MapLibre overrides (dark) ─────────────────────── */
+  /* ─ MapLibre light overrides ───────────────────── */
   .maplibregl-ctrl-attrib{
-    background:rgba(30,24,18,.85)!important;color:var(--dim)!important;
-    font-family:var(--mono)!important;font-size:9px!important;padding:3px 6px!important;
+    background:rgba(255,255,255,.88)!important;color:var(--dim)!important;
+    font-family:var(--mono)!important;font-size:9px!important;
   }
-  .maplibregl-ctrl-attrib a{color:var(--amber)!important}
+  .maplibregl-ctrl-attrib a{color:var(--sky)!important}
   .maplibregl-ctrl-group{
-    background:rgba(30,24,18,.92)!important;border:1px solid var(--line-2)!important;
+    background:var(--panel)!important;border:1px solid var(--line)!important;
     box-shadow:var(--shadow)!important;border-radius:6px!important;
   }
-  .maplibregl-ctrl button{background:transparent!important}
-  .maplibregl-ctrl button span{filter:invert(.85) hue-rotate(180deg)}
   .maplibregl-ctrl-scale{
-    background:rgba(30,24,18,.75)!important;border-color:var(--line-2)!important;color:var(--ink-2)!important;
+    background:rgba(255,255,255,.85)!important;border-color:var(--line-2)!important;color:var(--ink-2)!important;
     font-family:var(--mono)!important;font-size:10px!important;
   }
 
-  /* ─ Toast ─────────────────────────────────────────── */
+  /* ─ Custom marker dot ──────────────────────────── */
+  .mk{
+    width:26px;height:26px;border-radius:50%;background:#fff;
+    border:3px solid var(--sky);box-shadow:0 2px 6px rgba(15,22,36,.25);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:10px;font-weight:700;color:var(--ink);
+    cursor:pointer;transition:transform .12s;
+  }
+  .mk:hover{transform:scale(1.15);box-shadow:0 4px 10px rgba(15,22,36,.3)}
+  .mk.active{transform:scale(1.25);border-width:4px}
+  .mk.start{border-color:var(--green);background:var(--green);color:#fff}
+  .mk.finish{border-color:var(--route);background:var(--route);color:#fff}
+  .mk.unesco{border-color:var(--gold);background:var(--gold)}
+  .mk.viewpoint{border-color:#5cc97d;background:#5cc97d;color:#fff}
+  .mk.culture{border-color:#8a5eb8;background:#8a5eb8;color:#fff}
+  .mk.nature{border-color:#4a8ed8;background:#4a8ed8;color:#fff}
+  .mk.aid{border-color:var(--sky);background:var(--sky);color:#fff}
+  .mk.history{border-color:#a8712a;background:#a8712a;color:#fff}
+
+  /* ─ Popup ──────────────────────────────────────── */
+  .maplibregl-popup-content{
+    background:var(--panel)!important;color:var(--ink)!important;
+    border:1px solid var(--line)!important;border-radius:var(--radius)!important;
+    padding:0!important;box-shadow:var(--shadow-lg)!important;
+    font-family:var(--sans)!important;max-width:300px;overflow:hidden;
+  }
+  .maplibregl-popup-tip{border-top-color:var(--panel)!important;border-bottom-color:var(--panel)!important}
+  .maplibregl-popup-close-button{color:var(--dim)!important;font-size:18px!important;padding:2px 8px!important;z-index:3}
+  .pp{display:flex;flex-direction:column;position:relative}
+  .pp .hero{
+    height:56px;position:relative;border-bottom:1px solid var(--line);
+    background:linear-gradient(135deg, var(--cat-color,#245478), rgba(255,255,255,.5));
+  }
+  .pp .hero::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:60%;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='40' viewBox='0 0 300 40' preserveAspectRatio='none'><path fill='rgba(255,255,255,.4)' d='M0,40 L0,20 L40,8 L80,18 L130,6 L180,22 L230,10 L280,20 L300,14 L300,40 Z'/></svg>") 0 100%/100% 100% no-repeat;
+  }
+  .pp .tag{
+    position:absolute;top:8px;left:10px;z-index:2;display:inline-flex;align-items:center;gap:5px;
+    padding:3px 8px;background:rgba(255,255,255,.95);border-radius:999px;
+    font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);font-weight:700;
+  }
+  .pp .tag .sw{width:7px;height:7px;border-radius:50%}
+  .pp .body{padding:12px 14px 14px}
+  .pp .nm{font-family:var(--display);font-size:16px;font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:6px}
+  .pp .meta{display:flex;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--dim);margin-bottom:10px}
+  .pp .meta .v{color:var(--ink);font-weight:600}
+  .pp .desc{font-size:13px;line-height:1.55;color:var(--ink-2);margin-bottom:12px}
+  .pp .cta{
+    display:inline-flex;align-items:center;gap:5px;padding:6px 10px;
+    background:var(--sky);color:#fff;border-radius:5px;font-size:11px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.08em;transition:all .12s;
+  }
+  .pp .cta:hover{background:var(--sky-2)}
+
+  /* ─ Toast ──────────────────────────────────────── */
   #toast{
-    position:absolute;top:72px;left:50%;transform:translateX(-50%) translateY(-8px);z-index:50;
-    padding:8px 14px;background:var(--ink);color:var(--bg);border-radius:6px;
-    font-family:var(--mono);font-size:11px;letter-spacing:.08em;
-    opacity:0;transition:all .2s;pointer-events:none;
+    position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-8px);z-index:50;
+    padding:8px 14px;background:var(--ink);color:#fff;border-radius:6px;
+    font-family:var(--mono);font-size:11px;opacity:0;transition:all .2s;pointer-events:none;
   }
   #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-  #toast.err{background:var(--red);color:#fff}
+  #toast.err{background:var(--route)}
 
-  /* ─ Responsive ────────────────────────────────────── */
-  @media (max-width: 880px){
-    :root{ --w-panel:280px }
-    .brand .tag{display:none}
-    .topnav button{padding:6px 10px;font-size:12px}
+  /* ─ Mobile ─────────────────────────────────────── */
+  @media (max-width: 720px){
+    :root{ --w-side:auto; --h-strip:90px }
+    aside.side{
+      left:12px;right:12px;top:auto;width:auto;max-height:45vh;bottom:calc(var(--h-strip) + 12px);
+      transform:translateY(calc(100% - 48px));
+    }
+    aside.side.open{transform:translateY(0)}
+    aside.side .side-body{overscroll-behavior:contain}
+    .side-head::after{
+      content:"▾";position:absolute;right:14px;top:14px;color:var(--sky);
+      font-size:18px;transition:transform .2s;
+    }
+    aside.side.open .side-head::after{transform:rotate(180deg)}
+    .brand-min .nm{display:none}
+    .stage-picker button{padding:5px 8px;font-size:10px}
+    .back-link span{display:none}
   }
-  @media (max-width: 680px){
-    :root{ --h-strip:88px; --h-header:50px }
-    .topnav .sep{display:none}
-    .topnav button{padding:6px 8px;font-size:11px}
-    .lang-pill{display:none}
-    .side{left:14px;width:auto;top:auto;bottom:calc(var(--h-strip) + 14px);max-height:40%;
-      transform:translateY(calc(100% - 48px));transition:transform .25s}
-    .side.open{transform:translateY(0)}
-    .side-head::after{content:"▾";float:right;color:var(--amber);transition:transform .2s}
-    .side.open .side-head::after{transform:rotate(180deg)}
-    .layer-bar{padding:3px}
-    .layer-pill{padding:6px 9px;font-size:11.5px}
-    .layer-pill .ico{width:14px;height:14px}
-    .layer-pill span.lbl{display:none}
-    .layer-pill:last-child span.lbl{display:inline}
-    .strip-actions .act-btn span{display:none}
-    .strip-actions .act-btn{padding:8px;width:36px;justify-content:center}
-  }
-
-  /* ─ Embed-friendly: no body margin, set when iframed ─ */
-  html, body{margin:0;padding:0}
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- ─ Top bar ──────────────────────────────────────── -->
+  <!-- ─ Top bar ────────────────────────────────────── -->
   <header class="topbar">
-    <div class="brand">
+    <a class="brand-min" href="./">
       <div class="mark" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6h3l-4.5 9l-4-7h5.5M9 6h2"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6h3l-4.5 9l-4-7h5.5M9 6h2"/></svg>
       </div>
-      <div>
-        <div class="name"><em>Tour of</em> Bosnia &amp; Herzegovina</div>
-        <div class="tag">Sarajevo → Neum · 5 Stages · 2026</div>
-      </div>
+      <span class="nm">Tour of BiH</span>
+    </a>
+
+    <div class="stage-picker" id="stage-picker" role="tablist">
+      <!-- populated by JS -->
     </div>
 
-    <nav class="topnav">
-      <button data-tab="routes" class="on"><span>Routes</span></button>
-      <div class="sep"></div>
-      <button data-tab="info"><span>Info</span></button>
-      <div class="sep"></div>
-      <button data-tab="gallery"><span>Gallery</span></button>
-      <div class="sep"></div>
-      <button data-tab="contacts"><span>Contacts</span></button>
-      <div class="lang-pill" role="group" aria-label="Language">
-        <button data-lang="bs" class="on">BS</button>
-        <button data-lang="en">EN</button>
-      </div>
-    </nav>
+    <div class="spacer"></div>
+
+    <a class="back-link" href="./" title="Back to landing">
+      <span>← Back</span>
+    </a>
+    <div class="lang-pill" role="group" aria-label="Language">
+      <button data-lang="bs" class="on">BS</button>
+      <button data-lang="en">EN</button>
+    </div>
   </header>
 
-  <!-- ─ Map body ─────────────────────────────────────── -->
+  <!-- ─ Map body ──────────────────────────────────── -->
   <div class="body">
     <div id="map"></div>
-    <div id="toast"></div>
+    <div id="toast" role="status" aria-live="polite"></div>
 
-    <!-- Layer pill bar -->
-    <div class="layer-bar" id="layer-bar">
-      <button class="layer-pill on pop-anchor" data-k="staze" id="pill-staze">
-        <span class="ico"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 18 L10 12 L14 16 L20 6"/></svg></span>
-        <span class="lbl" data-i18n="pill.staze">Staze</span>
-      </button>
-      <button class="layer-pill on pop-anchor" data-k="poi" id="pill-poi">
-        <span class="ico"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 C7 2 4 6 4 10 c0 5 8 12 8 12 s8-7 8-12 c0-4-3-8-8-8z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
-        <span class="lbl" data-i18n="pill.poi">POI</span>
-        <svg class="chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9 L12 15 L18 9"/></svg>
-        <div class="popover" id="pop-poi"></div>
-      </button>
-      <button class="layer-pill on" data-k="reljef" id="pill-reljef">
-        <span class="ico"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 L9 10 L13 16 L16 12 L21 20z"/></svg></span>
-        <span class="lbl" data-i18n="pill.reljef">Reljef</span>
-      </button>
-      <button class="layer-pill pop-anchor" data-k="topo" id="pill-topo">
-        <span class="ico"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 L9 13 L14 16 L21 11"/><path d="M3 11 L9 7 L14 10 L21 5" opacity=".5"/></svg></span>
-        <span class="lbl" data-i18n="pill.topo">Topo Map</span>
-        <svg class="chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9 L12 15 L18 9"/></svg>
-        <div class="popover" id="pop-basemap"></div>
-      </button>
+    <!-- Controls (top-left) -->
+    <div class="ctrl-group">
+      <div class="ctrl" id="basemap-ctrl" role="tablist" aria-label="Basemap">
+        <button data-bm="satellite" class="on">Satelit</button>
+        <button data-bm="topo">Topo</button>
+        <button data-bm="streets">Ulice</button>
+      </div>
+      <div class="ctrl" id="view-ctrl" role="tablist" aria-label="View">
+        <button data-v="2d" class="on">2D</button>
+        <button data-v="3d">3D</button>
+      </div>
     </div>
 
-    <!-- Right panel (tabs) -->
-    <aside class="side" id="side">
+    <!-- Side panel -->
+    <aside class="side" id="side" aria-label="Stage details">
       <div class="side-head" id="side-head">
-        <h3 id="side-title">Info o Trci</h3>
+        <div class="eye"><span class="dot"></span><span id="stage-eye">Etapa 1</span></div>
+        <h2 id="stage-title">—</h2>
+        <div class="stats">
+          <div class="s"><div class="k" data-i18n="st.len">Dužina</div><div class="v" id="stat-km">—<small>km</small></div></div>
+          <div class="s"><div class="k" data-i18n="st.gain">Uspon</div><div class="v" id="stat-gain">—<small>m</small></div></div>
+          <div class="s"><div class="k" data-i18n="st.max">Max</div><div class="v" id="stat-max">—<small>m</small></div></div>
+          <div class="s"><div class="k" data-i18n="st.diff">Težina</div><div class="v"><span class="stars" id="stat-diff"></span></div></div>
+        </div>
       </div>
-      <div class="side-body" id="side-body">
-        <!-- injected by JS -->
+      <div class="side-body">
+        <div class="side-sub" data-i18n="side.highlights">Znamenitosti na trasi</div>
+        <ol class="hl-list" id="hl-list"></ol>
+      </div>
+      <div class="side-foot">
+        <a class="btn primary" id="act-gpx" download>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L12 15 M7 10 L12 15 L17 10 M5 21 L19 21"/></svg>
+          <span data-i18n="act.gpx">Preuzmi GPX</span>
+        </a>
+        <button class="btn ghost" id="act-fit">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9 L4 4 L9 4 M15 4 L20 4 L20 9 M4 15 L4 20 L9 20 M15 20 L20 20 L20 15"/></svg>
+          <span data-i18n="act.fit">Centriraj</span>
+        </button>
       </div>
     </aside>
-
   </div>
 
-  <!-- ─ Elevation strip ──────────────────────────────── -->
+  <!-- ─ Elevation strip ──────────────────────────── -->
   <div class="strip">
-    <div class="strip-prof">
-      <div class="strip-head">
-        <div class="ttl">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2 a8 8 0 0 0-8 8 c0 5 8 12 8 12 s8-7 8-12 a8 8 0 0 0-8-8z"/></svg>
-          <span data-i18n="strip.profil">Profil Staze</span>
-        </div>
-        <div class="sub" id="strip-sub">—</div>
+    <div class="strip-head">
+      <div class="ttl">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 L9 10 L13 16 L16 12 L21 20z"/></svg>
+        <span data-i18n="strip.prof">Profil etape</span>
       </div>
-      <div class="prof-wrap" id="prof-wrap">
-        <svg id="elev-svg" viewBox="0 0 1000 80" preserveAspectRatio="none"></svg>
-        <div class="y-axis" id="y-axis"></div>
-        <div class="axis" id="x-axis"></div>
-        <div id="prof-cur"></div>
-        <div id="prof-tip">—</div>
-      </div>
+      <div class="sub" id="strip-sub">—</div>
     </div>
-
-    <div class="strip-actions">
-      <button class="act-btn primary" id="act-gpx" title="Download GPX">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L12 15 M7 10 L12 15 L17 10 M5 21 L19 21"/></svg>
-        <span data-i18n="act.gpx">Download GPX</span>
-      </button>
-      <button class="act-btn" id="act-share" title="Share">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/></svg>
-        <span data-i18n="act.share">Share Route</span>
-      </button>
-      <button class="act-btn round" id="act-info" title="About">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="8.01"/><line x1="12" y1="11" x2="12" y2="16"/></svg>
-      </button>
+    <div class="prof-wrap" id="prof-wrap">
+      <svg id="elev-svg" viewBox="0 0 1000 80" preserveAspectRatio="none"></svg>
+      <div class="y-axis" id="y-axis"></div>
+      <div class="x-axis" id="x-axis"></div>
+      <div id="prof-cur"></div>
+      <div id="prof-tip">—</div>
     </div>
   </div>
-
 </div>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script>
+'use strict';
+
 /* ─────────────────────────────────────────────────────
-   I18N (SR default, EN secondary)
+   I18N — Bosnian / English
    ───────────────────────────────────────────────────── */
 const I18N = {
-  bs: {
-    "nav.routes":"Etape","nav.info":"Info","nav.gallery":"Galerija","nav.contacts":"Kontakt",
-    "pill.staze":"Trasa","pill.poi":"POI","pill.reljef":"Reljef","pill.topo":"Topo Mapa",
-    "side.info":"Info o Etapi","side.gallery":"Galerija","side.contacts":"Kontakt","side.routes":"Izbor Etape",
-    "strip.profil":"Profil Etape","act.gpx":"Preuzmi GPX","act.share":"Podijeli",
-    "r.length":"Dužina","r.gain":"Uspon","r.diff":"Težina","r.max":"Max","r.cp":"Kontrolne Tačke",
-    "pop.cat.staze":"Trasa","pop.cat.okrepne":"Okrepna Stanica","pop.cat.vidikovci":"Vidikovac",
-    "pop.cat.video":"Video Lokacija","pop.cat.poi":"POI","pop.cat.medical":"Prva Pomoć","pop.cat.tourist":"Turistička Tačka",
-    "poi.water":"Voda i Okrepa","poi.fuel":"Benzinske Stanice","poi.shops":"Prodavnice",
-    "poi.lodging":"Smještaj","poi.viewpoint":"Vidikovci i Priroda","poi.culture":"Kultura i Baština",
-    "poi.medical":"Medicinske Usluge","poi.services":"ATM i Bankomati",
-    "cta.video":"Pogledaj video (YouTube)","cta.directions":"Uputstva",
-    "meta.km":"Km etape","meta.ele":"Nadmorska visina","meta.race":"Tokom trke","yes":"DA","no":"NE",
-    "tab.stages":"Etape",
+  bs:{
+    "st.len":"Dužina","st.gain":"Uspon","st.max":"Max","st.diff":"Težina",
+    "side.highlights":"Znamenitosti na trasi",
+    "act.gpx":"Preuzmi GPX","act.fit":"Centriraj",
+    "strip.prof":"Profil etape",
+    "cat.start":"Start","cat.finish":"Finiš","cat.unesco":"UNESCO",
+    "cat.viewpoint":"Vidikovac","cat.culture":"Kultura","cat.nature":"Priroda",
+    "cat.aid":"Okrepna Stanica","cat.history":"Historija",
+    "pop.cta":"Google Maps","pop.km":"KM","pop.ele":"NADM. VIS.",
   },
-  en: {
-    "nav.routes":"Stages","nav.info":"Info","nav.gallery":"Gallery","nav.contacts":"Contacts",
-    "pill.staze":"Route","pill.poi":"POI","pill.reljef":"Relief","pill.topo":"Topo Map",
-    "side.info":"Stage Info","side.gallery":"Gallery","side.contacts":"Contacts","side.routes":"Stage Picker",
-    "strip.profil":"Stage Profile","act.gpx":"Download GPX","act.share":"Share",
-    "r.length":"Length","r.gain":"Climb","r.diff":"Difficulty","r.max":"Max","r.cp":"Checkpoints",
-    "pop.cat.staze":"Route","pop.cat.okrepne":"Aid Station","pop.cat.vidikovci":"Viewpoint",
-    "pop.cat.video":"Video Location","pop.cat.poi":"POI","pop.cat.medical":"First Aid","pop.cat.tourist":"Tourist Site",
-    "poi.water":"Water & Food","poi.fuel":"Gas Stations","poi.shops":"Shops",
-    "poi.lodging":"Lodging","poi.viewpoint":"Viewpoints & Nature","poi.culture":"Heritage & Culture",
-    "poi.medical":"Medical & Emergency","poi.services":"ATM & Banking",
-    "cta.video":"Watch video (YouTube)","cta.directions":"Directions",
-    "meta.km":"Stage km","meta.ele":"Elevation","meta.race":"During race","yes":"YES","no":"NO",
-    "tab.stages":"Stages",
+  en:{
+    "st.len":"Length","st.gain":"Climb","st.max":"Max","st.diff":"Difficulty",
+    "side.highlights":"Highlights on course",
+    "act.gpx":"Download GPX","act.fit":"Fit",
+    "strip.prof":"Stage profile",
+    "cat.start":"Start","cat.finish":"Finish","cat.unesco":"UNESCO",
+    "cat.viewpoint":"Viewpoint","cat.culture":"Culture","cat.nature":"Nature",
+    "cat.aid":"Aid Station","cat.history":"History",
+    "pop.cta":"Directions","pop.km":"KM","pop.ele":"ELEVATION",
   },
 };
 let LANG = localStorage.getItem("tobh.lang") || "bs";
-function t(key, fb){ return (I18N[LANG]||I18N.bs)[key] ?? fb ?? key; }
-function applyI18n(){
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    el.textContent = t(el.getAttribute("data-i18n"), el.textContent);
-  });
-  document.documentElement.lang = LANG;
-}
+function t(k, fb){ return (I18N[LANG]||I18N.bs)[k] ?? fb ?? k; }
 
 /* ─────────────────────────────────────────────────────
-   TILE & TERRAIN SOURCES
+   Stage catalogue — title, bullets, real landmark coords
+   ───────────────────────────────────────────────────── */
+const STAGES = [
+  {
+    key:"stage1", num:1, difficulty:4,
+    title:{
+      bs:"Etapa 1 · Sarajevo → Konjic",
+      en:"Stage 1 · Sarajevo → Konjic",
+    },
+    highlights:[
+      { cat:"start", coord:[18.4310,43.8589], name:"Vijećnica, Sarajevo",
+        km:0.0, ele:540,
+        desc:{
+          bs:"Nacionalna biblioteka i simbol Sarajeva. Start etape koja pelje bicikliste preko dinarskih planina ka moru.",
+          en:"National Library and icon of Sarajevo. Start of the stage that takes riders across the Dinaric mountains toward the sea."
+        }},
+      { cat:"viewpoint", coord:[18.2600,43.7167], name:"Bjelašnica",
+        km:16.5, ele:820,
+        desc:{
+          bs:"Olimpijska planina Zimskih Igara 1984. Vrh 2067 m. Odavde se pruža pogled na gradski kotao.",
+          en:"Mountain of the 1984 Winter Olympics, summit 2067 m. Classic viewpoint over the Sarajevo basin."
+        }},
+      { cat:"viewpoint", coord:[18.0300,43.7500], name:"Ivan-sedlo · 971 m",
+        km:28.9, ele:971,
+        desc:{
+          bs:"Najviši prevoj etape. Klimatska i hidrološka granica BiH — odavde se odvaja Jadranski od crnomorskog sliva.",
+          en:"The stage's highest pass. BiH's climatic and hydrological divide — Adriatic and Black Sea watersheds split here."
+        }},
+      { cat:"aid", coord:[17.9750,43.6900], name:"Jablaničko jezero",
+        km:50.0, ele:310,
+        desc:{
+          bs:"Okrepna stanica uz jedno od najvećih vještačkih jezera u BiH.",
+          en:"Aid station beside one of BiH's largest man-made lakes."
+        }},
+      { cat:"finish", coord:[17.9631,43.6536], name:"Stari most, Konjic",
+        km:55.5, ele:287,
+        desc:{
+          bs:"UNESCO kandidat · Kameni most iz 17. vijeka, rekonstruisan 2009. Simbol konjičke drvorezbarske tradicije.",
+          en:"UNESCO candidate · 17th-century Ottoman stone bridge, rebuilt in 2009. Symbol of Konjic's woodcarving heritage."
+        }},
+    ],
+  },
+  {
+    key:"stage2", num:2, difficulty:2,
+    title:{
+      bs:"Etapa 2 · Konjic → Jablanica",
+      en:"Stage 2 · Konjic → Jablanica",
+    },
+    highlights:[
+      { cat:"start", coord:[17.9631,43.6536], name:"Konjic",
+        km:0.0, ele:290,
+        desc:{
+          bs:"Grad drvorezbara i olimpijaca, start etape koja prati obalu jezera.",
+          en:"Town of woodcarvers and Olympians; start of a lakeside stage."
+        }},
+      { cat:"history", coord:[17.9370,43.6700], name:"ARK D-0 · Titov bunker",
+        km:4.6, ele:260,
+        desc:{
+          bs:"Tajno atomsko sklonište iz hladnog rata, danas otvoreno za posjete. Jedno od tri najveća podzemna objekta u bivšoj Jugoslaviji.",
+          en:"Cold-war nuclear shelter, now open to tours. One of the three largest underground facilities in the former Yugoslavia."
+        }},
+      { cat:"viewpoint", coord:[17.8667,43.5667], name:"Prenj · Divovi Hercegovine",
+        km:10.3, ele:340,
+        desc:{
+          bs:"Masiv Prenja — dinarska planina preko 2100 m, jedna od najstrmijih u Evropi.",
+          en:"Prenj massif — Dinaric mountain over 2100 m, one of the steepest in Europe."
+        }},
+      { cat:"aid", coord:[17.8000,43.6800], name:"Jablaničko jezero · južna obala",
+        km:17.0, ele:190,
+        desc:{
+          bs:"Okrepna stanica. Ovdje se Neretva uliva u Jablaničko jezero.",
+          en:"Aid station. Here the Neretva river flows into Jablanica Lake."
+        }},
+      { cat:"finish", coord:[17.7625,43.6580], name:"Muzej 'Bitka za ranjenike', Jablanica",
+        km:22.7, ele:200,
+        desc:{
+          bs:"Historijski muzej posvećen poznatoj WWII operaciji na Neretvi. Rušeni most iz filma je i dalje ovdje.",
+          en:"Museum devoted to the famous WWII Battle of the Neretva. The bridge destroyed for the 1969 film is still here."
+        }},
+    ],
+  },
+  {
+    key:"stage3", num:3, difficulty:2,
+    title:{
+      bs:"Etapa 3 · Jablanica → Mostar",
+      en:"Stage 3 · Jablanica → Mostar",
+    },
+    highlights:[
+      { cat:"start", coord:[17.7625,43.6580], name:"Jablanica",
+        km:0.0, ele:200,
+        desc:{
+          bs:"Start etape koja prati divlji kanjon Neretve. Grad poznat po janjetini sa ražnja.",
+          en:"Start of a stage following the wild Neretva canyon. Jablanica is famous for its spit-roast lamb."
+        }},
+      { cat:"nature", coord:[17.8000,43.5300], name:"Neretva kanjon",
+        km:7.0, ele:150,
+        desc:{
+          bs:"Smaragdna rijeka probija se kroz vapnenačke klisure. Dubina kanjona na pojedinim mjestima prelazi 1200 m.",
+          en:"Emerald river cutting through limestone cliffs. The canyon exceeds 1200 m depth in places."
+        }},
+      { cat:"nature", coord:[17.8934,43.2579], name:"Blagaj · Vrelo Bune",
+        km:37.7, ele:70,
+        desc:{
+          bs:"Istočno od trase, 7 km detour. Derviški samostan uz najjače krško vrelo u Evropi (43 m³/s). Znamenitost Mostara.",
+          en:"7 km detour east of the course. Dervish monastery beside Europe's strongest karst spring (43 m³/s). Mostar's most famous side-trip."
+        }},
+      { cat:"finish", coord:[17.8147,43.3370], name:"Stari Most, Mostar",
+        km:46.2, ele:65,
+        desc:{
+          bs:"UNESCO svjetska baština. Osmanski most iz 16. vijeka, simbol pomirenja. Rekonstruiran 2004.",
+          en:"UNESCO World Heritage. 16th-century Ottoman bridge, symbol of reconciliation. Rebuilt 2004."
+        }},
+    ],
+  },
+  {
+    key:"stage4", num:4, difficulty:3,
+    title:{
+      bs:"Etapa 4 · Mostar → Ljubuški",
+      en:"Stage 4 · Mostar → Ljubuški",
+    },
+    highlights:[
+      { cat:"start", coord:[17.8147,43.3370], name:"Mostar",
+        km:0.0, ele:60,
+        desc:{
+          bs:"Start pored Starog mosta. Etapa prelazi iz mediteranske u krški pejzaž zapadne Hercegovine.",
+          en:"Start near Stari Most. Stage transitions from Mediterranean into the karst landscape of west Herzegovina."
+        }},
+      { cat:"culture", coord:[17.6750,43.1890], name:"Međugorje",
+        km:6.8, ele:220,
+        desc:{
+          bs:"Katoličko hodočasničko mjesto — više od milion posjetilaca godišnje.",
+          en:"Catholic pilgrimage site attracting over a million visitors per year."
+        }},
+      { cat:"aid", coord:[17.5789,43.2033], name:"Trebižat most",
+        km:15.3, ele:100,
+        desc:{
+          bs:"Okrepna stanica uz rijeku Trebižat, koja se kroz Hercegovinu pojavljuje i nestaje na sedam mjesta.",
+          en:"Aid station by the Trebižat, the 'river of seven names' that surfaces and vanishes through Herzegovina's karst."
+        }},
+      { cat:"history", coord:[17.5294,43.1929], name:"Humac",
+        km:23.2, ele:280,
+        desc:{
+          bs:"Humačka ploča — najstariji poznati ćirilični natpis u BiH (10. – 12. vijek). U muzeju franjevačkog samostana.",
+          en:"The Humac Tablet — oldest known Cyrillic inscription in BiH (10–12th c.), held in the Franciscan monastery museum."
+        }},
+      { cat:"finish", coord:[17.5489,43.1961], name:"Ljubuški · Herceg Stjepan",
+        km:33.5, ele:110,
+        desc:{
+          bs:"Srednjovjekovna tvrđava Herceg Stjepan iznad grada. Grad poznat po vinogradima i ljetnim temperaturama iznad 40°C.",
+          en:"Medieval Herceg-Stjepan fortress above the town. Famous for vineyards and 40°C+ summers."
+        }},
+    ],
+  },
+  {
+    key:"stage5", num:5, difficulty:3,
+    title:{
+      bs:"Etapa 5 · Ljubuški → Neum (Jadran)",
+      en:"Stage 5 · Ljubuški → Neum (Adriatic)",
+    },
+    highlights:[
+      { cat:"start", coord:[17.5489,43.1961], name:"Ljubuški",
+        km:0.0, ele:110,
+        desc:{
+          bs:"Start finalne etape — od hercegovačkih vinograda do jedine obale BiH.",
+          en:"Start of the finale stage — from Herzegovinian vineyards to BiH's only coastline."
+        }},
+      { cat:"nature", coord:[17.6261,43.1567], name:"Vodopad Kravica",
+        km:6.9, ele:130,
+        desc:{
+          bs:"Prirodni spomenik · 25 m visoka kaskada rijeke Trebižat. Ljeti popularno kupalište.",
+          en:"Natural monument · a 25 m cascade on the Trebižat. A popular summer swimming spot."
+        }},
+      { cat:"aid", coord:[17.6850,43.1170], name:"Čapljina",
+        km:22.9, ele:50,
+        desc:{
+          bs:"Okrepna stanica. Uz rijeku Neretvu na ušću Bregave.",
+          en:"Aid station on the Neretva at the Bregava confluence."
+        }},
+      { cat:"nature", coord:[17.7700,43.0500], name:"Hutovo Blato",
+        km:31.5, ele:40,
+        desc:{
+          bs:"Vidljivo istočno od trase. Ramsar rezervat i park prirode · 240 vrsta ptica, najvažnije zimovalište za vodene ptice na Balkanu.",
+          en:"Visible east of the course. Ramsar-listed nature park · 240 bird species, the Balkans' most important waterbird wintering ground."
+        }},
+      { cat:"viewpoint", coord:[17.6500,42.9400], name:"Pogled na Klek-zaliv",
+        km:50.5, ele:150,
+        desc:{
+          bs:"Prvi pogled na more — poluotok Klek i Pelješac, tvrđavica Klek iz 14. vijeka.",
+          en:"First view of the sea — Klek peninsula, Pelješac, and the 14th-century Klek fort."
+        }},
+      { cat:"finish", coord:[17.6106,42.9239], name:"Neum · Jadran",
+        km:57.4, ele:2,
+        desc:{
+          bs:"Finiš na rivi u Neumu — jedinom izlazu BiH na Jadransko more. 24 km obale između Pelješca i hrvatske granice.",
+          en:"Finish on the Neum promenade — BiH's only access to the Adriatic. 24 km of coast between Pelješac and the Croatian border."
+        }},
+    ],
+  },
+];
+
+/* ─────────────────────────────────────────────────────
+   Tile sources
    ───────────────────────────────────────────────────── */
 const BASEMAPS = {
   satellite:{
-    label:"Satellite",
     type:"raster",
     tiles:["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
     tileSize:256, maxzoom:19,
-    attribution:'Imagery © Esri, Maxar, Earthstar Geographics'
+    attribution:'Imagery © Esri, Maxar, Earthstar Geographics',
   },
   topo:{
-    label:"Topo Map",
     type:"raster",
-    tiles:["https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
-           "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
-           "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"],
+    tiles:[
+      "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "https://c.tile.opentopomap.org/{z}/{x}/{y}.png",
+    ],
     tileSize:256, maxzoom:17,
-    attribution:'© OpenTopoMap (CC-BY-SA) · © OSM'
+    attribution:'© OpenTopoMap (CC-BY-SA) · © OSM',
   },
-  carto:{
-    label:"Streets",
+  streets:{
     type:"raster",
-    tiles:["https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-           "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-           "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-           "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"],
+    tiles:[
+      "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+    ],
     tileSize:256, maxzoom:19,
-    attribution:'© OpenStreetMap contributors · © CARTO'
+    attribution:'© OpenStreetMap contributors · © CARTO',
   },
 };
 const TERRAIN_SRC = {
@@ -607,832 +678,556 @@ const TERRAIN_SRC = {
   tileSize:256, encoding:"terrarium", maxzoom:15,
 };
 
-/* ─────────────────────────────────────────────────────
-   POI categories (Overpass)
-   ───────────────────────────────────────────────────── */
-const POI_CATS = {
-  water:{ labelKey:"poi.water", color:"#5fa8d3", q:`node["amenity"="drinking_water"](bbox);node["amenity"="cafe"](bbox);node["amenity"="restaurant"](bbox);node["amenity"="fast_food"](bbox);node["amenity"="bar"](bbox);node["amenity"="pub"](bbox);`},
-  fuel:{ labelKey:"poi.fuel", color:"#e8a55c", q:`node["amenity"="fuel"](bbox);`},
-  shops:{ labelKey:"poi.shops", color:"#c8732a", q:`node["shop"="supermarket"](bbox);node["shop"="convenience"](bbox);node["shop"="bakery"](bbox);node["shop"="grocery"](bbox);node["shop"="general"](bbox);node["shop"="bicycle"](bbox);node["shop"="sports"](bbox);`},
-  lodging:{ labelKey:"poi.lodging", color:"#8a5eb8", q:`node["tourism"="hotel"](bbox);node["tourism"="guest_house"](bbox);node["tourism"="hostel"](bbox);node["tourism"="chalet"](bbox);node["tourism"="camp_site"](bbox);node["tourism"="apartment"](bbox);`},
-  viewpoint:{ labelKey:"poi.viewpoint", color:"#7dbf4d", q:`node["tourism"="viewpoint"](bbox);node["natural"="peak"](bbox);node["natural"="waterfall"](bbox);node["natural"="cave_entrance"](bbox);`},
-  culture:{ labelKey:"poi.culture", color:"#c19b2a", q:`node["historic"](bbox);node["tourism"="attraction"](bbox);node["tourism"="museum"](bbox);node["amenity"="place_of_worship"](bbox);`},
-  medical:{ labelKey:"poi.medical", color:"#e06666", q:`node["amenity"="hospital"](bbox);node["amenity"="pharmacy"](bbox);node["amenity"="doctors"](bbox);node["amenity"="clinic"](bbox);node["amenity"="police"](bbox);`},
-  services:{ labelKey:"poi.services", color:"#b8a890", q:`node["amenity"="atm"](bbox);node["amenity"="bank"](bbox);node["amenity"="post_office"](bbox);`},
+const CAT_COLOR = {
+  start:"#5a8a3a", finish:"#d64545", unesco:"#ffc840",
+  viewpoint:"#5cc97d", culture:"#8a5eb8", nature:"#4a8ed8",
+  aid:"#1a3d5c", history:"#a8712a",
 };
-const OVERPASS_ENDPOINTS=[
-  "https://overpass-api.de/api/interpreter",
-  "https://overpass.kumi.systems/api/interpreter",
-  "https://overpass.private.coffee/api/interpreter",
-];
-const POI_CORRIDOR_M=1500, POI_BBOX_BUFFER=0.02;
-
-function classify(tg){
-  if(tg.amenity==="fuel")return"fuel";
-  if(tg.shop)return"shops";
-  if(["drinking_water","cafe","restaurant","fast_food","bar","pub"].includes(tg.amenity))return"water";
-  if(["hotel","guest_house","hostel","chalet","camp_site","apartment"].includes(tg.tourism))return"lodging";
-  if(tg.tourism==="viewpoint"||["peak","waterfall","cave_entrance"].includes(tg.natural))return"viewpoint";
-  if(tg.historic||["attraction","museum"].includes(tg.tourism)||tg.amenity==="place_of_worship")return"culture";
-  if(["hospital","pharmacy","doctors","clinic","police"].includes(tg.amenity))return"medical";
-  if(["atm","bank","post_office"].includes(tg.amenity))return"services";
-  return null;
-}
-
-/* ─────────────────────────────────────────────────────
-   Route meta + sample event-specific POIs
-   Coordinates picked inside Velika/Mala corridor
-   ───────────────────────────────────────────────────── */
-const ROUTE_META = {
-  stage1:{
-    title:{ bs:"Etapa 1 · Sarajevo → Konjic", en:"Stage 1 · Sarajevo → Konjic" },
-    shortLabel:"S1",
-    difficulty:4,
-    bulletsBs:["Start ispred Vijećnice u Sarajevu","Uspon preko Ivan-sedla (prevoj 971 m)","Spust u dolinu Neretve, prolaz pored Bjelašnice","Finiš na Starom mostu, Konjic (UNESCO)"],
-    bulletsEn:["Start at Sarajevo City Hall (Vijećnica)","Climb Ivan Saddle pass (971 m)","Descent into the Neretva valley past Bjelašnica","Finish at Konjic Old Bridge (UNESCO)"],
-  },
-  stage2:{
-    title:{ bs:"Etapa 2 · Konjic → Jablanica", en:"Stage 2 · Konjic → Jablanica" },
-    shortLabel:"S2",
-    difficulty:2,
-    bulletsBs:["Obala Jablaničkog jezera","Masiv Prenja iznad rute","Muzej 'Bitka za ranjenike'","Finiš u Jablanici"],
-    bulletsEn:["Along the shores of Jablanica Lake","Prenj massif towering above","Battle of the Wounded Museum","Finish in Jablanica"],
-  },
-  stage3:{
-    title:{ bs:"Etapa 3 · Jablanica → Mostar", en:"Stage 3 · Jablanica → Mostar" },
-    shortLabel:"S3",
-    difficulty:2,
-    bulletsBs:["Neretva kanjon kroz Hercegovinu","Počitelj — srednjovjekovna tvrđava","Prolaz pored tekije Blagaj","Finiš na Starom mostu, Mostar (UNESCO)"],
-    bulletsEn:["Neretva canyon through Herzegovina","Počitelj — medieval Ottoman citadel","Passes Blagaj dervish monastery","Finish at Stari Most, Mostar (UNESCO)"],
-  },
-  stage4:{
-    title:{ bs:"Etapa 4 · Mostar → Ljubuški", en:"Stage 4 · Mostar → Ljubuški" },
-    shortLabel:"S4",
-    difficulty:3,
-    bulletsBs:["Krški pejzaž zapadne Hercegovine","Humac — najstariji ćirilični natpis u BiH","Vinogradi i polja","Finiš ispod tvrđave Ljubuški"],
-    bulletsEn:["West-Herzegovina karst landscape","Humac — oldest Cyrillic inscription in BiH","Vineyards and fields","Finish below Ljubuški fortress"],
-  },
-  stage5:{
-    title:{ bs:"Etapa 5 · Ljubuški → Neum (Jadran)", en:"Stage 5 · Ljubuški → Neum (Adriatic)" },
-    shortLabel:"S5",
-    difficulty:3,
-    bulletsBs:["Vodopad Kravica — prirodni spomenik","Popovo polje — najveće krško polje","Hutovo Blato — ornitološki rezervat","Spust do Jadrana — jedine obale BiH","Finiš na rivi u Neumu"],
-    bulletsEn:["Kravica Waterfall — natural monument","Popovo Polje — the largest karst field","Hutovo Blato bird reserve","Descent to the Adriatic — BiH's only coast","Finish on the Neum seafront"],
-  },
-};
-
-// Event-specific markers — aid stations, UNESCO sites, tourist stops, viewpoints, media locations
-const EVENT_MARKERS = [
-  /* ── STAGE 1 · Sarajevo → Konjic ───────────────────────── */
-  { kind:"viewpoint", route:"stage1", atRatio:0.12, name:"Vijećnica, Sarajevo",
-    label:{bs:"Start · Vijećnica",en:"Start · City Hall"}, ele:540, km:0.4,
-    note:{bs:"Nacionalna biblioteka, simbol Sarajeva",en:"National Library, icon of Sarajevo"} },
-  { kind:"viewpoint", route:"stage1", atRatio:0.30, name:"Bjelašnica",
-    label:{bs:"Bjelašnica",en:"Bjelašnica Massif"}, ele:820, km:16.5,
-    note:{bs:"Olimpijska planina 1984.",en:"1984 Olympic mountain"} },
-  { kind:"checkpoint", route:"stage1", atRatio:0.40, name:"Hadžići",
-    label:{bs:"Okrepna Stanica",en:"Aid Station"}, ele:640, km:22.2 },
-  { kind:"viewpoint", route:"stage1", atRatio:0.52, name:"Ivan-sedlo · 971 m",
-    label:{bs:"Vrh etape",en:"Stage Summit"}, ele:971, km:28.9,
-    note:{bs:"Klimatska i hidrološka granica BiH — ovdje se odvaja jadranski od crnomorskog sliva",en:"Climatic & hydrological divide of BiH — Adriatic / Black Sea watersheds split here"} },
-  { kind:"video", route:"stage1", atRatio:0.70, name:"Neretva izvor",
-    label:{bs:"VIDEO",en:"VIDEO"}, ele:430, km:38.9, video:"https://youtube.com/watch?v=example" },
-  { kind:"checkpoint", route:"stage1", atRatio:0.90, name:"Jablaničko jezero",
-    label:{bs:"Okrepna Stanica",en:"Aid Station"}, ele:310, km:50.0 },
-  { kind:"finish-tourist", route:"stage1", atRatio:0.98, name:"Stari most, Konjic",
-    label:{bs:"UNESCO · Stari most",en:"UNESCO · Old Bridge"}, ele:287, km:54.5,
-    note:{bs:"Kameni most iz 17. vijeka",en:"17th-century Ottoman stone bridge"} },
-
-  /* ── STAGE 2 · Konjic → Jablanica ──────────────────────── */
-  { kind:"viewpoint", route:"stage2", atRatio:0.20, name:"ARK D-0 · Titov bunker",
-    label:{bs:"Turistička tačka",en:"Tourist Site"}, ele:260, km:4.6,
-    note:{bs:"Tajno atomsko sklonište, otvoreno za posjete",en:"Cold-war nuclear shelter, now open to tours"} },
-  { kind:"viewpoint", route:"stage2", atRatio:0.45, name:"Prenj · Divovi Hercegovine",
-    label:{bs:"Vidikovac · Prenj",en:"Viewpoint · Prenj"}, ele:340, km:10.3,
-    note:{bs:"Masiv Prenja — dinarska planina iznad 2000 m",en:"Prenj massif — Dinaric peak over 2000 m"} },
-  { kind:"checkpoint", route:"stage2", atRatio:0.75, name:"Jablaničko jezero — južna obala",
-    label:{bs:"Okrepna Stanica",en:"Aid Station"}, ele:190, km:17.0 },
-  { kind:"finish-tourist", route:"stage2", atRatio:0.98, name:"Muzej 'Bitka za ranjenike', Jablanica",
-    label:{bs:"Finiš · Jablanica",en:"Finish · Jablanica"}, ele:200, km:22.5,
-    note:{bs:"Istorijski muzej WWII operacije",en:"WWII Battle of Neretva history museum"} },
-
-  /* ── STAGE 3 · Jablanica → Mostar ──────────────────────── */
-  { kind:"video", route:"stage3", atRatio:0.15, name:"Neretva kanjon",
-    label:{bs:"VIDEO",en:"VIDEO"}, ele:150, km:7.0, video:"https://youtube.com/watch?v=example" },
-  { kind:"checkpoint", route:"stage3", atRatio:0.38, name:"Potoci / Žitomislići",
-    label:{bs:"Okrepna Stanica",en:"Aid Station"}, ele:90, km:17.9 },
-  { kind:"viewpoint", route:"stage3", atRatio:0.58, name:"Počitelj",
-    label:{bs:"UNESCO · Počitelj",en:"UNESCO · Počitelj"}, ele:100, km:27.3,
-    note:{bs:"Srednjovjekovna otomanska varoš i tvrđava",en:"Medieval Ottoman town & citadel"} },
-  { kind:"viewpoint", route:"stage3", atRatio:0.80, name:"Blagaj · Tekija na Buni",
-    label:{bs:"Vrelo Bune",en:"Buna Spring"}, ele:70, km:37.7,
-    note:{bs:"Derviški samostan uz najjače krško vrelo u Evropi",en:"Dervish monastery beside Europe's strongest karst spring"} },
-  { kind:"finish-tourist", route:"stage3", atRatio:0.98, name:"Stari Most, Mostar",
-    label:{bs:"UNESCO · Stari Most",en:"UNESCO · Stari Most"}, ele:65, km:46.2,
-    note:{bs:"Simbol Hercegovine, pregrađen 2004.",en:"Icon of Herzegovina, rebuilt 2004"} },
-
-  /* ── STAGE 4 · Mostar → Ljubuški ───────────────────────── */
-  { kind:"viewpoint", route:"stage4", atRatio:0.20, name:"Međugorje",
-    label:{bs:"Vjersko hodočašće",en:"Pilgrimage Site"}, ele:220, km:6.8,
-    note:{bs:"Katoličko hodočasničko mjesto, 1 mil. posjetilaca godišnje",en:"Catholic pilgrimage site, 1M+ visitors/year"} },
-  { kind:"checkpoint", route:"stage4", atRatio:0.45, name:"Trebižat most",
-    label:{bs:"Okrepna Stanica",en:"Aid Station"}, ele:100, km:15.3 },
-  { kind:"viewpoint", route:"stage4", atRatio:0.68, name:"Humac",
-    label:{bs:"Arheologija",en:"Archaeology"}, ele:280, km:23.2,
-    note:{bs:"Humačka ploča — najstariji ćirilični natpis u BiH (10–12 v.)",en:"Humac Tablet — oldest Cyrillic inscription in BiH (10–12c.)"} },
-  { kind:"video", route:"stage4", atRatio:0.82, name:"Vinogradi zapadne Hercegovine",
-    label:{bs:"VIDEO",en:"VIDEO"}, ele:180, km:27.9, video:"https://youtube.com/watch?v=example" },
-  { kind:"finish-tourist", route:"stage4", atRatio:0.98, name:"Ljubuški · Herceg Stjepan",
-    label:{bs:"Finiš · Ljubuški",en:"Finish · Ljubuški"}, ele:110, km:33.5,
-    note:{bs:"Srednjovjekovna tvrđava iznad grada",en:"Medieval citadel above town"} },
-
-  /* ── STAGE 5 · Ljubuški → Neum (Adriatic Finale) ────────── */
-  { kind:"viewpoint", route:"stage5", atRatio:0.12, name:"Vodopad Kravica",
-    label:{bs:"Kravica",en:"Kravica Falls"}, ele:130, km:6.9,
-    note:{bs:"Prirodni spomenik, 25 m visoka kaskada",en:"Natural monument, 25 m cascade"} },
-  { kind:"video", route:"stage5", atRatio:0.25, name:"Rijeka Trebižat",
-    label:{bs:"VIDEO",en:"VIDEO"}, ele:60, km:14.3, video:"https://youtube.com/watch?v=example" },
-  { kind:"checkpoint", route:"stage5", atRatio:0.40, name:"Čapljina",
-    label:{bs:"Okrepna Stanica",en:"Aid Station"}, ele:50, km:22.9 },
-  { kind:"viewpoint", route:"stage5", atRatio:0.55, name:"Hutovo Blato",
-    label:{bs:"Ramsar rezervat",en:"Ramsar Reserve"}, ele:40, km:31.5,
-    note:{bs:"Park prirode, 240 vrsta ptica",en:"Nature park, 240 bird species"} },
-  { kind:"viewpoint", route:"stage5", atRatio:0.72, name:"Popovo polje",
-    label:{bs:"Krško polje",en:"Karst Field"}, ele:80, km:41.2,
-    note:{bs:"Najveće krško polje u Dinaridima (180 km²)",en:"Largest Dinaric karst field (180 km²)"} },
-  { kind:"viewpoint", route:"stage5", atRatio:0.88, name:"Klek-zaliv · Jadran",
-    label:{bs:"Vidikovac Jadran",en:"Adriatic Overlook"}, ele:150, km:50.5,
-    note:{bs:"Prvi pogled na more — poluostrvo Klek i Pelješac",en:"First sea view — Klek peninsula & Pelješac"} },
-  { kind:"finish-tourist", route:"stage5", atRatio:0.99, name:"Neum · Jadran",
-    label:{bs:"Finiš · Neum",en:"Finish · Neum"}, ele:2, km:57.2,
-    note:{bs:"Jedini izlaz BiH na more, 24 km obale",en:"BiH's only coast, 24 km of Adriatic"} },
-];
-
-/* ─────────────────────────────────────────────────────
-   Geometry helpers
-   ───────────────────────────────────────────────────── */
-function haversine(a,b){
-  const R=6371000,toRad=x=>x*Math.PI/180;
-  const dLat=toRad(b[1]-a[1]),dLon=toRad(b[0]-a[0]);
-  const s1=Math.sin(dLat/2),s2=Math.sin(dLon/2);
-  const q=s1*s1+Math.cos(toRad(a[1]))*Math.cos(toRad(b[1]))*s2*s2;
-  return 2*R*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));
-}
-function pointToSegmentM(p,a,b){
-  const lr=(a[1]+b[1])/2*Math.PI/180;
-  const mx=111320*Math.cos(lr),my=110540;
-  const ax=a[0]*mx,ay=a[1]*my,bx=b[0]*mx,by=b[1]*my,px=p[0]*mx,py=p[1]*my;
-  const dx=bx-ax,dy=by-ay;
-  const tt=Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy||1)));
-  return Math.hypot(px-(ax+tt*dx),py-(ay+tt*dy));
-}
-function minDistToRoute(p,coords){
-  let best=Infinity;
-  for(let i=1;i<coords.length;i++){
-    const d=pointToSegmentM(p,coords[i-1],coords[i]); if(d<best)best=d;
-  }
-  return best;
-}
-function bboxOf(coords,pad){
-  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
-  for(const c of coords){ if(c[0]<x0)x0=c[0]; if(c[0]>x1)x1=c[0]; if(c[1]<y0)y0=c[1]; if(c[1]>y1)y1=c[1]; }
-  return [x0-pad,y0-pad,x1+pad,y1+pad];
-}
-function coordAtRatio(coords,r){
-  // pick coord at linear-distance fraction r
-  const stats=routeStats(coords);
-  const target=r*stats.dist;
-  for(let i=1;i<stats.cum.length;i++){
-    if(stats.cum[i]>=target){
-      return coords[i];
-    }
-  }
-  return coords[coords.length-1];
-}
-function routeStats(coords){
-  let dist=0,gain=0,max=-Infinity,min=Infinity;
-  const cum=[0];
-  for(let i=1;i<coords.length;i++){
-    const d=haversine(coords[i-1],coords[i]); dist+=d; cum.push(dist);
-    const dz=coords[i][2]-coords[i-1][2]; if(dz>0)gain+=dz;
-    if(coords[i][2]>max)max=coords[i][2]; if(coords[i][2]<min)min=coords[i][2];
-  }
-  return {dist,gain,max,min,cum};
-}
-
-/* ─────────────────────────────────────────────────────
-   Route loading
-   ───────────────────────────────────────────────────── */
-async function loadRoutes(){
-  try{
-    const r=await fetch("_routes.json");
-    if(r.ok){
-      const data=await r.json();
-      return Object.entries(data).map(([k,v])=>({key:k,name:v.name||k,coords:v.coords}));
-    }
-  }catch(_){}
-  return [];
-}
 
 /* ─────────────────────────────────────────────────────
    State
    ───────────────────────────────────────────────────── */
-const state={
+const state = {
   map:null,
-  routes:[],active:null,
-  basemap:"satellite",view3d:true,
-  tab:"routes",
-  layers:{ staze:true, poi:true, reljef:true },
-  poiVisible:new Set(["water","fuel","shops","lodging","viewpoint","culture","medical","services"]),
-  pois:[],poisByCat:{},poiLoading:false,poiError:null,
-  markers:[],
-  poiMarkers:[],
-  stats:null,
-  panelOpen:true,
+  routes:{},           // {key: {coords, stats}}
+  activeKey:"stage1",
+  basemap:"satellite",
+  view3d:false,
+  markers:[],          // active stage markers
+  popup:null,
+  styleReady:false,
+  dataReady:false,
 };
 
 /* ─────────────────────────────────────────────────────
-   Map
+   Map build
    ───────────────────────────────────────────────────── */
 function buildStyle(){
-  const bm=BASEMAPS[state.basemap];
-  return {version:8,glyphs:"https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
-    sources:{base:bm,terrain:TERRAIN_SRC},
-    layers:[{id:"base",type:"raster",source:"base"}],
+  return {
+    version:8,
+    sources:{ base:BASEMAPS[state.basemap] },
+    layers:[{ id:"base", type:"raster", source:"base" }],
   };
 }
 
 function initMap(){
-  state.map=new maplibregl.Map({
-    container:"map",style:buildStyle(),
-    center:[18.1,43.5],zoom:8,hash:false,attributionControl:{compact:true},
+  state.map = new maplibregl.Map({
+    container:"map",
+    style:buildStyle(),
+    center:[17.9, 43.5],
+    zoom:7.5,
+    hash:false,
+    attributionControl:{ compact:true },
     pitchWithRotate:true,
   });
-  state.map.addControl(new maplibregl.NavigationControl({showCompass:true,visualizePitch:true}),"right");
-  state.map.addControl(new maplibregl.ScaleControl({maxWidth:100,unit:"metric"}),"bottom-right");
-  state.map.on("load",onStyleReady);
-  state.map.on("styledata",()=>{
-    if(!state.map.getSource("route-main")) onStyleReady();
+  state.map.addControl(new maplibregl.NavigationControl({ showCompass:true, visualizePitch:true }), "bottom-right");
+  state.map.addControl(new maplibregl.ScaleControl({ maxWidth:100, unit:"metric" }), "bottom-left");
+
+  state.map.on("load", onMapLoad);
+  state.map.on("styledata", () => {
+    // Re-add sources/layers after any setStyle() call
+    if (state.dataReady && !state.map.getSource("route-all")) addRouteLayers();
   });
 }
-function onStyleReady(){
-  if(state.map.getSource("route-main"))return;
-  // sources
-  state.map.addSource("route-main",{type:"geojson",data:empty()});
-  state.map.addSource("route-alt",{type:"geojson",data:empty()});
-  // layers (route alt faded, main with halo)
-  state.map.addLayer({id:"route-alt-l",type:"line",source:"route-alt",
-    paint:{"line-color":"#f4ece0","line-width":2,"line-opacity":.25,"line-dasharray":[2,2]}});
-  state.map.addLayer({id:"route-main-halo",type:"line",source:"route-main",
-    layout:{"line-cap":"round","line-join":"round"},
-    paint:{"line-color":"#1f1410","line-width":8,"line-opacity":.6}});
-  state.map.addLayer({id:"route-main-glow",type:"line",source:"route-main",
-    layout:{"line-cap":"round","line-join":"round"},
-    paint:{"line-color":"#4a8ed8","line-width":6,"line-opacity":.35,"line-blur":3}});
-  state.map.addLayer({id:"route-main-l",type:"line",source:"route-main",
-    layout:{"line-cap":"round","line-join":"round"},
-    paint:{"line-color":"#4a8ed8","line-width":4}});
 
-  if(state.view3d) apply3D();
-  if(state.active){ renderActive(); }
+function onMapLoad(){
+  state.styleReady = true;
+  if (state.dataReady) addRouteLayers();
 }
-function empty(){ return {type:"FeatureCollection",features:[]}; }
 
-function apply3D(){
-  if(!state.map.getSource("terrain"))state.map.addSource("terrain",TERRAIN_SRC);
-  state.map.setTerrain({source:"terrain",exaggeration:1.4});
-  state.map.easeTo({pitch:56,bearing:-14,duration:700});
+function addRouteLayers(){
+  // One GeoJSON source with all stages; filter by active stage via paint expressions
+  const features = Object.entries(state.routes).map(([key,r])=>({
+    type:"Feature",
+    properties:{ key },
+    geometry:{ type:"LineString", coordinates:r.coords.map(c=>[c[0],c[1]]) }
+  }));
+  const fc = { type:"FeatureCollection", features };
+  if (state.map.getSource("route-all")) {
+    state.map.getSource("route-all").setData(fc);
+  } else {
+    state.map.addSource("route-all", { type:"geojson", data:fc });
+    // Dimmed lines for all stages
+    state.map.addLayer({
+      id:"rt-dim",
+      type:"line",
+      source:"route-all",
+      layout:{ "line-cap":"round", "line-join":"round" },
+      paint:{
+        "line-color":"#d64545",
+        "line-opacity":0.28,
+        "line-width":[
+          "interpolate",["linear"],["zoom"],
+          8,1.5, 12,2.5, 16,4
+        ],
+      },
+    });
+    // White halo for active stage
+    state.map.addLayer({
+      id:"rt-active-halo",
+      type:"line",
+      source:"route-all",
+      layout:{ "line-cap":"round", "line-join":"round" },
+      filter:["==",["get","key"], state.activeKey],
+      paint:{
+        "line-color":"#ffffff",
+        "line-opacity":0.8,
+        "line-width":[
+          "interpolate",["linear"],["zoom"],
+          8,5, 12,7, 16,9
+        ],
+      },
+    });
+    // Active stage line (bold red)
+    state.map.addLayer({
+      id:"rt-active",
+      type:"line",
+      source:"route-all",
+      layout:{ "line-cap":"round", "line-join":"round" },
+      filter:["==",["get","key"], state.activeKey],
+      paint:{
+        "line-color":"#d64545",
+        "line-width":[
+          "interpolate",["linear"],["zoom"],
+          8,3, 12,4.5, 16,6
+        ],
+      },
+    });
+  }
+
+  if (state.view3d) enable3D();
+  renderStage(state.activeKey, { fit:true });
 }
-function apply2D(){
+
+function enable3D(){
+  if (!state.map.getSource("terrain")) state.map.addSource("terrain", TERRAIN_SRC);
+  state.map.setTerrain({ source:"terrain", exaggeration:1.4 });
+  state.map.easeTo({ pitch:55, bearing:-12, duration:600 });
+}
+function disable3D(){
   state.map.setTerrain(null);
-  state.map.easeTo({pitch:0,bearing:0,duration:600});
-}
-function applyBasemap(){
-  state.map.setStyle(buildStyle());
-  // onStyleReady re-adds sources/layers
-  setTimeout(()=>{ renderActive(); renderMarkers(); renderPoiMarkers(); },150);
+  state.map.easeTo({ pitch:0, bearing:0, duration:500 });
 }
 
 /* ─────────────────────────────────────────────────────
-   Route rendering
+   Markers & popups
    ───────────────────────────────────────────────────── */
-function renderActive(){
-  if(!state.active||!state.map.isStyleLoaded()||!state.map.getSource("route-main"))return;
-  const on=state.layers.staze;
-  state.map.getSource("route-main").setData(on?{type:"FeatureCollection",features:[{
-    type:"Feature",geometry:{type:"LineString",coordinates:state.active.coords.map(c=>[c[0],c[1]])}
-  }]}:empty());
-  const alt=state.routes.find(r=>r!==state.active);
-  state.map.getSource("route-alt").setData(on&&alt?{type:"FeatureCollection",features:[{
-    type:"Feature",geometry:{type:"LineString",coordinates:alt.coords.map(c=>[c[0],c[1]])}
-  }]}:empty());
-  if(on){ fitActive(); }
-  state.stats=routeStats(state.active.coords);
-  renderElevation();
-  renderSide();
-  renderMarkers();
-}
-function fitActive(){
-  if(!state.active)return;
-  const bb=bboxOf(state.active.coords,0);
-  const panelOffsetRight = (window.innerWidth>680 && state.panelOpen) ? 340 : 20;
-  state.map.fitBounds([[bb[0],bb[1]],[bb[2],bb[3]]],
-    {padding:{top:80,right:panelOffsetRight,bottom:40,left:40},duration:800,pitch:state.view3d?56:0});
+function clearMarkers(){
+  state.markers.forEach(m=>m.remove());
+  state.markers = [];
 }
 
-/* ─────────────────────────────────────────────────────
-   Event markers (start/finish/checkpoints/video/viewpoints)
-   ───────────────────────────────────────────────────── */
-function clearMarkers(){ state.markers.forEach(m=>m.remove()); state.markers=[]; }
-function renderMarkers(){
+/**
+ * Snap a (lon, lat) to the nearest point on the active route's coords,
+ * returning {coord, routeDist, snapDist}. If the landmark is on-route
+ * already (snapDist < 500 m) the original coord is returned.
+ */
+function snapToRoute(pt, routeCoords){
+  let best = Infinity, bestC = null;
+  for (const c of routeCoords){
+    const d = hav(pt, c);
+    if (d < best){ best = d; bestC = c; }
+  }
+  return { coord:[bestC[0], bestC[1]], snapDist:best };
+}
+
+function renderMarkers(stage){
   clearMarkers();
-  if(!state.active||!state.map.isStyleLoaded())return;
-  const coords=state.active.coords;
-  if(!coords.length)return;
+  const route = state.routes[stage.key];
+  const coords = route?.coords || [];
+  stage.highlights.forEach((h,i)=>{
+    // Snap the landmark to the nearest route point if it drifts off-route
+    const snap = snapToRoute(h.coord, coords);
+    const displayCoord = snap.snapDist > 500 ? snap.coord : h.coord;
+    // cache for popup usage
+    h._display = displayCoord;
+    h._offRoute = snap.snapDist > 500 ? Math.round(snap.snapDist) : null;
 
-  // START
-  pushMk(coords[0],"start",LANG==="sr"?"START":"START","play");
-  // FINISH
-  pushMk(coords[coords.length-1],"finish",LANG==="sr"?"FINISH":"FINISH","flag");
-
-  // event-specific markers for this route
-  for(const m of EVENT_MARKERS){
-    if(m.route!==state.active.key)continue;
-    const c=coordAtRatio(coords,m.atRatio);
-    const label=m.label[LANG]||m.label.bs||m.label.sr;
-    const icon = m.kind==="checkpoint"?"drop"
-      :(m.kind==="viewpoint"?"peak"
-      :(m.kind==="medical"?"plus"
-      :(m.kind==="video"?"play"
-      :(m.kind==="finish-tourist"?"pin":"pin"))));
-    const el=mkEl(m.kind,label,icon);
+    const el = document.createElement("div");
+    el.className = "mk " + h.cat;
+    el.textContent = (i+1);
+    el.setAttribute("aria-label", h.name);
     el.addEventListener("click",(e)=>{
       e.stopPropagation();
-      openRichPopup(c,m);
+      openPopup(stage, i);
+      highlightListItem(i);
     });
-    const marker=new maplibregl.Marker({element:el,anchor:"bottom"}).setLngLat([c[0],c[1]]).addTo(state.map);
+    const marker = new maplibregl.Marker({ element:el, anchor:"center" })
+      .setLngLat(displayCoord)
+      .addTo(state.map);
     state.markers.push(marker);
-  }
-}
-function pushMk(c,kind,label,icon){
-  const el=mkEl(kind,label,icon);
-  const marker=new maplibregl.Marker({element:el,anchor:"bottom"}).setLngLat([c[0],c[1]]).addTo(state.map);
-  state.markers.push(marker);
-}
-function mkEl(kind,label,icon){
-  const el=document.createElement("div");
-  el.className="mk "+kind;
-  el.innerHTML=`<span class="mico">${iconSvg(icon)}</span><span>${escapeHtml(label)}</span>`;
-  return el;
-}
-function iconSvg(k){
-  const base='stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-  switch(k){
-    case "play": return `<svg width="10" height="10" viewBox="0 0 24 24" ${base}><polygon points="6 4 20 12 6 20 6 4" fill="currentColor"/></svg>`;
-    case "flag": return `<svg width="10" height="10" viewBox="0 0 24 24" ${base}><path d="M5 3 L5 21" /><path d="M5 4 Q11 0 17 4 T21 4 L21 13 Q15 17 9 13 T5 13z" fill="currentColor" stroke="none"/></svg>`;
-    case "drop": return `<svg width="10" height="10" viewBox="0 0 24 24" ${base}><path d="M12 3 C8 9 6 13 6 16 a6 6 0 0 0 12 0 c0-3-2-7-6-13z" fill="currentColor" stroke="none"/></svg>`;
-    case "peak": return `<svg width="10" height="10" viewBox="0 0 24 24" ${base}><path d="M3 20 L9 10 L13 16 L16 12 L21 20z" fill="currentColor" stroke="none"/></svg>`;
-    case "plus": return `<svg width="10" height="10" viewBox="0 0 24 24" ${base} stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
-    case "pin":
-    default: return `<svg width="10" height="10" viewBox="0 0 24 24" ${base}><path d="M12 2 C7 2 4 6 4 10 c0 5 8 12 8 12 s8-7 8-12 c0-4-3-8-8-8z" fill="currentColor" stroke="none"/></svg>`;
-  }
+  });
 }
 
-function openRichPopup(c,m){
-  const route=state.active;
-  const kindColor = {
-    checkpoint:"#4a8ed8", viewpoint:"#5cc97d", medical:"#e67272",
-    video:"#ffc840", "finish-tourist":"#ffc840"
-  }[m.kind] || "#4a8ed8";
-  const catKey = {
-    checkpoint:"pop.cat.okrepne", viewpoint:"pop.cat.vidikovci",
-    medical:"pop.cat.medical", video:"pop.cat.video",
-    "finish-tourist":"pop.cat.tourist"
-  }[m.kind] || "pop.cat.poi";
-  const noteHtml = m.note
-    ? `<div style="margin:4px 0 8px;font-size:12px;color:var(--dim);line-height:1.45;font-style:italic">${escapeHtml(m.note[LANG]||m.note.bs||m.note.en||"")}</div>`
+function openPopup(stage, i){
+  const h = stage.highlights[i];
+  const color = CAT_COLOR[h.cat] || "#245478";
+  const catLabel = t("cat."+h.cat, h.cat);
+  const desc = (h.desc && h.desc[LANG]) || h.desc?.bs || "";
+  // Always send Directions to the real landmark, not the snap point
+  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${h.coord[1]},${h.coord[0]}`;
+  const offBadge = h._offRoute
+    ? `<span style="margin-left:6px;padding:2px 7px;background:var(--panel-2);border-radius:3px;font-size:9px;letter-spacing:.1em;color:var(--ink-2);text-transform:uppercase;font-weight:600">${LANG==="bs"?"~"+Math.round(h._offRoute/1000)+" km off route":"~"+Math.round(h._offRoute/1000)+" km off course"}</span>`
     : "";
-  const metaHtml=`
-    <div class="meta">
-      <div><div class="k">${t("meta.km")}</div><div class="v">${(m.km??"—")} km</div></div>
-      <div><div class="k">${t("meta.ele")}</div><div class="v">${(m.ele??"—")} m</div></div>
-      <div><div class="k">${t("meta.race")}</div><div class="v">${t("yes")}</div></div>
-      <div><div class="k">Tip</div><div class="v">${t(catKey)}</div></div>
-    </div>`;
-  const ctaHtml = m.video
-    ? `<a class="cta yt" href="${m.video}" target="_blank" rel="noreferrer">▶ ${t("cta.video")}</a>`
-    : `<button class="cta" onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${c[1]},${c[0]}','_blank')">→ ${t("cta.directions")}</button>`;
-  const html=`
-    <div class="rp">
-      <div class="hero"><span class="tag"><span class="sw" style="background:${kindColor}"></span>${t(catKey)}</span></div>
-      <div class="body">
-        <div class="nm">${escapeHtml(m.name||"—")}</div>
-        <div class="ty">${escapeHtml(route?.name||"")}</div>
-        ${noteHtml}
-        ${metaHtml}
-        ${ctaHtml}
+  const html = `<div class="pp">
+    <div class="hero" style="--cat-color:${color}"></div>
+    <span class="tag"><span class="sw" style="background:${color}"></span>${catLabel}${offBadge}</span>
+    <div class="body">
+      <div class="nm">${escapeHtml(h.name)}</div>
+      <div class="meta">
+        <span>${t("pop.km")} · <span class="v">${h.km.toFixed(1)}</span></span>
+        <span>${t("pop.ele")} · <span class="v">${h.ele} m</span></span>
       </div>
-    </div>`;
-  new maplibregl.Popup({offset:18,closeButton:true,maxWidth:"280px"}).setLngLat([c[0],c[1]]).setHTML(html).addTo(state.map);
-}
-function escapeHtml(s){ return (s||"").toString().replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]); }
-
-/* ─────────────────────────────────────────────────────
-   POI markers (Overpass)
-   ───────────────────────────────────────────────────── */
-function clearPoiMarkers(){ state.poiMarkers.forEach(m=>m.remove()); state.poiMarkers=[]; }
-function renderPoiMarkers(){
-  clearPoiMarkers();
-  if(!state.layers.poi)return;
-  const q=""; // search not exposed in this embed
-  for(const p of state.pois){
-    if(!state.poiVisible.has(p.cat))continue;
-    const color=POI_CATS[p.cat].color;
-    const el=document.createElement("div");
-    el.className="poi-dot-outer";
-    el.innerHTML=`<span class="poi-dot-inner" style="background:${color}"></span>`;
-    el.addEventListener("click",(e)=>{
-      e.stopPropagation();
-      openPoiPopup(p);
-    });
-    const marker=new maplibregl.Marker({element:el,anchor:"center"}).setLngLat([p.lon,p.lat]).addTo(state.map);
-    state.poiMarkers.push(marker);
-  }
-}
-function openPoiPopup(p){
-  const cat=POI_CATS[p.cat];
-  const tg=p.tags||{};
-  const nm=tg.name||"—";
-  const ty=tg.amenity||tg.shop||tg.tourism||tg.natural||tg.historic||"";
-  const html=`
-    <div class="rp">
-      <div class="hero"><span class="tag"><span class="sw" style="background:${cat.color}"></span>${t(cat.labelKey)}</span></div>
-      <div class="body">
-        <div class="nm">${escapeHtml(nm)}</div>
-        <div class="ty">${escapeHtml(ty)}</div>
-        <div class="meta">
-          <div><div class="k">${LANG==="sr"?"Udaljenost":"Distance"}</div><div class="v">${Math.round(p.dist)} m</div></div>
-          <div><div class="k">${LANG==="sr"?"Kategorija":"Category"}</div><div class="v">${t(cat.labelKey)}</div></div>
-        </div>
-        <button class="cta" onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}','_blank')">→ ${t("cta.directions")}</button>
-      </div>
-    </div>`;
-  new maplibregl.Popup({offset:14,maxWidth:"270px"}).setLngLat([p.lon,p.lat]).setHTML(html).addTo(state.map);
-}
-
-async function fetchPois(){
-  if(!state.active||state.poiLoading)return;
-  state.poiLoading=true;
-  const bb=bboxOf(state.active.coords,POI_BBOX_BUFFER);
-  const bbox=`${bb[1]},${bb[0]},${bb[3]},${bb[2]}`;
-  const qs=Object.values(POI_CATS).map(c=>c.q).join("");
-  const q=`[out:json][timeout:30][bbox:${bbox}];(${qs});out;`;
-  let resp=null,err=null;
-  for(const url of OVERPASS_ENDPOINTS){
-    try{
-      const r=await fetch(url,{method:"POST",body:"data="+encodeURIComponent(q)});
-      if(!r.ok){err=`HTTP ${r.status}`;continue;}
-      resp=await r.json();break;
-    }catch(e){err=e.message;}
-  }
-  state.poiLoading=false;
-  if(!resp){ toast("Overpass: "+(err||"unreachable"),true); return; }
-  const seen=new Set(),pois=[];
-  for(const el of resp.elements||[]){
-    if(el.type!=="node")continue;
-    const tg=el.tags||{},cat=classify(tg); if(!cat)continue;
-    const dist=minDistToRoute([el.lon,el.lat],state.active.coords);
-    if(dist>POI_CORRIDOR_M)continue;
-    const k=`${el.lon.toFixed(5)},${el.lat.toFixed(5)},${cat}`;
-    if(seen.has(k))continue; seen.add(k);
-    pois.push({id:el.id,lon:el.lon,lat:el.lat,tags:tg,cat,dist});
-  }
-  state.pois=pois;
-  state.poisByCat={};
-  for(const k of Object.keys(POI_CATS)) state.poisByCat[k]=[];
-  for(const p of pois) state.poisByCat[p.cat].push(p);
-  renderPoiPopover();
-  renderPoiMarkers();
-}
-
-/* ─────────────────────────────────────────────────────
-   Popovers (POI filter, Basemap)
-   ───────────────────────────────────────────────────── */
-function renderPoiPopover(){
-  const pop=document.getElementById("pop-poi");
-  let html="";
-  for(const [key,cat] of Object.entries(POI_CATS)){
-    const n=(state.poisByCat[key]||[]).length;
-    const on=state.poiVisible.has(key);
-    html+=`<div class="row ${on?"on":""}" data-cat="${key}">
-      <span class="chk"></span><span class="sw" style="background:${cat.color}"></span>
-      <span class="lbl">${t(cat.labelKey)}</span>
-      <span class="mono" style="font-size:10px;color:var(--muted)">${state.poiLoading?"…":n}</span></div>`;
-  }
-  pop.innerHTML=html;
-  pop.querySelectorAll(".row").forEach(r=>r.addEventListener("click",(ev)=>{
-    ev.stopPropagation();
-    const k=r.dataset.cat;
-    if(state.poiVisible.has(k))state.poiVisible.delete(k); else state.poiVisible.add(k);
-    renderPoiPopover(); renderPoiMarkers();
-  }));
-}
-function renderBasemapPopover(){
-  const pop=document.getElementById("pop-basemap");
-  let html="";
-  for(const [k,bm] of Object.entries(BASEMAPS)){
-    const on=state.basemap===k;
-    html+=`<div class="row ${on?"on":""}" data-bm="${k}"><span class="chk"></span><span class="lbl">${bm.label}</span></div>`;
-  }
-  pop.innerHTML=html;
-  pop.querySelectorAll(".row").forEach(r=>r.addEventListener("click",(ev)=>{
-    ev.stopPropagation();
-    state.basemap=r.dataset.bm; applyBasemap(); renderBasemapPopover();
-    closePopovers();
-  }));
-}
-function closePopovers(){ document.querySelectorAll(".popover.on").forEach(p=>p.classList.remove("on")); }
-
-/* ─────────────────────────────────────────────────────
-   Side panel (tabs)
-   ───────────────────────────────────────────────────── */
-function renderSide(){
-  const title=document.getElementById("side-title");
-  const body=document.getElementById("side-body");
-  if(state.tab==="routes"||state.tab==="info"){
-    title.textContent=t("side.info");
-    body.innerHTML=routeInfoHtml();
-    wireRouteSwitch();
-  } else if (state.tab==="gallery"){
-    title.textContent=t("side.gallery");
-    body.innerHTML=galleryHtml();
-  } else if (state.tab==="contacts"){
-    title.textContent=t("side.contacts");
-    body.innerHTML=contactsHtml();
-  }
-}
-function routeInfoHtml(){
-  if(!state.active)return `<div style="color:var(--dim);font-size:13px">—</div>`;
-  const meta=ROUTE_META[state.active.key]||{};
-  const s=state.stats||routeStats(state.active.coords);
-  const title=(meta.title&&meta.title[LANG])||state.active.name;
-  const len=meta.lenOverride??(s.dist/1000);
-  const gain=meta.gainOverride??s.gain;
-  const bullets=(LANG==="bs"?meta.bulletsBs:meta.bulletsEn)||[];
-  const diff=meta.difficulty||4;
-  const stars=Array.from({length:5}).map((_,i)=>i<diff
-    ? `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12,2 15,9 22,10 17,15 18,22 12,18 6,22 7,15 2,10 9,9"/></svg>`
-    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12,2 15,9 22,10 17,15 18,22 12,18 6,22 7,15 2,10 9,9"/></svg>`).join("");
-  const cpCount = EVENT_MARKERS.filter(m=>m.route===state.active.key && m.kind==="checkpoint").length;
-  return `
-    <div class="r-title">${escapeHtml(title)}</div>
-    <div class="r-stats">
-      <div class="row"><span class="k">${t("r.length")}:</span><span class="v">${(+len).toFixed(1)}<small>km</small></span></div>
-      <div class="row"><span class="k">${t("r.gain")}:</span><span class="v">${Math.round(gain)}<small>m</small></span></div>
-      <div class="row"><span class="k">${t("r.max")}:</span><span class="v">${Math.round(s.max)}<small>m</small></span></div>
-      <div class="row"><span class="k">${t("r.cp")}:</span><span class="v">${cpCount}</span></div>
-      <div class="row"><span class="k">${t("r.diff")}:</span><span class="v"><span class="stars">${stars}</span></span></div>
+      <div class="desc">${escapeHtml(desc)}</div>
+      <a class="cta" href="${gmaps}" target="_blank" rel="noreferrer">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12 L19 12 M13 6 L19 12 L13 18"/></svg>
+        ${t("pop.cta")}
+      </a>
     </div>
-    <div class="divider"></div>
-    <ul class="bullet-list">${bullets.map(b=>`<li>${escapeHtml(b)}</li>`).join("")}</ul>
-    <div class="route-switch" id="route-switch">
-      ${state.routes.map(r=>{
-        const meta=ROUTE_META[r.key]||{};
-        const short=meta.shortLabel || r.key.toUpperCase();
-        return `<button data-r="${r.key}" class="${state.active?.key===r.key?"on":""}">${short}</button>`;
-      }).join("")}
-    </div>`;
-}
-function wireRouteSwitch(){
-  const sw=document.getElementById("route-switch"); if(!sw)return;
-  sw.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
-    const r=state.routes.find(x=>x.key===b.dataset.r);
-    if(r){ state.active=r; renderActive(); renderPoiMarkers(); fetchPois(); }
-  }));
-}
-function galleryHtml(){
-  const items=[
-    {label:"Vijećnica, Sarajevo"},{label:"Ivan-sedlo (971 m)"},{label:"Konjic Stari most"},
-    {label:"Neretva kanjon"},{label:"Stari Most, Mostar"},{label:"Počitelj"},
-    {label:"Kravice vodopad"},{label:"Radimlja stećci"},{label:"Klek · Neum"}
-  ];
-  return `<div class="gallery-grid">${items.map(i=>`
-    <div class="gal-item"><div class="ph"></div><div class="lbl">${escapeHtml(i.label)}</div></div>`).join("")}
-  </div>
-  <div style="margin-top:14px;font-size:12px;color:var(--dim);line-height:1.5">
-    ${LANG==="bs"
-      ? "Mjesta zamijenjena placeholderima. Organizator dostavlja prave fotografije za produkciju."
-      : "Placeholder tiles — the organiser provides real race photography for production."}
   </div>`;
+  if (state.popup) state.popup.remove();
+  state.popup = new maplibregl.Popup({ offset:18, maxWidth:"300px" })
+    .setLngLat(h._display || h.coord)
+    .setHTML(html)
+    .addTo(state.map);
 }
-function contactsHtml(){
-  return `
-    <div class="contact-block">
-      <div class="h">${LANG==="bs"?"Organizator":"Organiser"}</div>
-      <div class="v">Biciklistički savez BiH</div>
-      <a href="mailto:info@bscbih.ba">info@bscbih.ba</a>
-      <a href="tel:+38733000000">+387 33 000 000</a>
-    </div>
-    <div class="contact-block">
-      <div class="h">${LANG==="bs"?"Trka":"Race"}</div>
-      <div class="v">Tour of Bosnia and Herzegovina</div>
-      <div class="v">${LANG==="bs"?"5 etapa · 140+ biciklista · 38 zemalja":"5 stages · 140+ riders · 38 countries"}</div>
-      <a href="https://www.uci.org/calendar" target="_blank" rel="noreferrer">UCI Race Calendar ↗</a>
-    </div>
-    <div class="contact-block">
-      <div class="h">${LANG==="bs"?"Partneri u razvoju":"Development partners"}</div>
-      <div class="v">${LANG==="bs"?"Turistička zajednica BiH":"BiH Tourism Board"}</div>
-      <div class="v">${LANG==="bs"?"Federacija BiH · Republika Srpska":"Federation BiH · Republika Srpska"}</div>
-      <div class="v">${LANG==="bs"?"Lokalne opštine na trasi":"Municipalities on course"}</div>
-    </div>
-    <div class="contact-block">
-      <div class="h">${LANG==="bs"?"Podaci":"Data"}</div>
-      <div class="v">${LANG==="bs"?"Rute · OSRM + organizator":"Routes · OSRM + organiser GPX"}</div>
-      <div class="v">POI · OpenStreetMap</div>
-      <div class="v">Teren · AWS Terrarium DEM</div>
-      <div class="v">${LANG==="bs"?"UNESCO podaci":"UNESCO WHS register"}</div>
-    </div>
-    <div class="contact-block">
-      <div class="h">${LANG==="bs"?"Izrada dashboard-a":"Dashboard by"}</div>
-      <a href="https://bozmaps.com/" target="_blank" rel="noreferrer">Bozmaps ↗</a>
-      <div class="v">${LANG==="bs"?"Geoprostorne usluge · UK i Balkan":"Geospatial services · UK & Balkans"}</div>
-      <a href="mailto:semir@bozmaps.com">semir@bozmaps.com</a>
-    </div>
-  `;
+
+function escapeHtml(s){
+  return (s||"").toString().replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
 /* ─────────────────────────────────────────────────────
-   Elevation profile
+   Stage switching
    ───────────────────────────────────────────────────── */
-function renderElevation(){
-  if(!state.active) return;
-  const svg=document.getElementById("elev-svg");
-  const s=state.stats;
-  const W=1000,H=80,P=4;
-  const coords=state.active.coords;
-  const xs=s.cum.map(c=>P+(c/s.dist)*(W-2*P));
-  const yr=(s.max-s.min)||1;
-  const ys=coords.map(c=>P+(1-(c[2]-s.min)/yr)*(H-2*P));
-  const area=`M ${xs[0].toFixed(1)} ${H-P} L `+xs.map((x,i)=>`${x.toFixed(1)} ${ys[i].toFixed(1)}`).join(" L ")+` L ${xs[xs.length-1].toFixed(1)} ${H-P} Z`;
-  const line=`M `+xs.map((x,i)=>`${x.toFixed(1)} ${ys[i].toFixed(1)}`).join(" L ");
-  svg.innerHTML=`
+// Side-panel + elevation + chrome (works without the map being ready)
+function renderStagePanels(key){
+  const stage = STAGES.find(s=>s.key===key);
+  const route = state.routes[key];
+  if (!stage || !route) return false;
+  state.activeKey = key;
+
+  renderSidePanel(stage, route);
+  renderElevation(route);
+
+  // Stage-picker pill
+  document.querySelectorAll("#stage-picker button").forEach(b=>{
+    b.classList.toggle("on", b.dataset.k === key);
+  });
+
+  // Active GPX link
+  const gpx = document.getElementById("act-gpx");
+  gpx.href = `gpx/${key}.gpx`;
+  gpx.download = `Tour_of_BiH_${key}.gpx`;
+  return true;
+}
+
+// Full render (panels + map markers + optional fit). Safe to call any time;
+// map-dependent parts silently skip until the style is ready.
+function renderStage(key, opts={}){
+  if (!renderStagePanels(key)) return;
+  const stage = STAGES.find(s=>s.key===key);
+  const route = state.routes[key];
+
+  // Map-layer update (only if layers exist)
+  if (state.map && state.map.getLayer && state.map.getLayer("rt-active")) {
+    state.map.setFilter("rt-active", ["==",["get","key"], key]);
+    state.map.setFilter("rt-active-halo", ["==",["get","key"], key]);
+  }
+
+  // Markers (MapLibre queues them until the map is ready, so this is safe pre-load)
+  if (state.map) renderMarkers(stage);
+
+  // Camera fit (only if map is ready)
+  if (opts.fit && state.styleReady) fitStage(stage, route);
+
+  if (state.popup){ state.popup.remove(); state.popup = null; }
+}
+
+function fitStage(stage, route){
+  const coords = route.coords;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for (const c of coords){
+    if (c[0]<minX) minX=c[0]; if (c[0]>maxX) maxX=c[0];
+    if (c[1]<minY) minY=c[1]; if (c[1]>maxY) maxY=c[1];
+  }
+  const w = window.innerWidth;
+  const right = w>720 ? 380 : 20;
+  const top = 80;
+  const bottom = 40;
+  state.map.fitBounds([[minX,minY],[maxX,maxY]], {
+    padding:{ top, right, bottom, left:20 },
+    duration:800,
+    pitch: state.view3d?55:0,
+    bearing: state.view3d?-12:0,
+  });
+}
+
+/* ─────────────────────────────────────────────────────
+   Side panel
+   ───────────────────────────────────────────────────── */
+function renderSidePanel(stage, route){
+  const st = route.stats || {};
+  document.getElementById("stage-eye").textContent =
+    `${LANG==="bs"?"Etapa":"Stage"} ${stage.num} / ${STAGES.length}`;
+  document.getElementById("stage-title").textContent = stage.title[LANG] || stage.title.bs;
+  document.getElementById("stat-km").innerHTML = `${st.km ?? "—"}<small> km</small>`;
+  document.getElementById("stat-gain").innerHTML = `${st.gain_m ?? "—"}<small> m</small>`;
+  document.getElementById("stat-max").innerHTML = `${st.max_m ?? "—"}<small> m</small>`;
+  document.getElementById("stat-diff").innerHTML = renderStars(stage.difficulty);
+
+  const list = document.getElementById("hl-list");
+  list.innerHTML = stage.highlights.map((h,i)=>`
+    <li class="hl-item ${h.cat}" data-i="${i}">
+      <div class="num">${i+1}</div>
+      <div class="txt">
+        <div class="nm">${escapeHtml(h.name)}</div>
+        <div class="sub"><span class="tag">${escapeHtml(t("cat."+h.cat,h.cat))}</span> · ${h.km.toFixed(1)} km · ${h.ele} m</div>
+      </div>
+    </li>`).join("");
+  list.querySelectorAll(".hl-item").forEach(li=>{
+    li.addEventListener("click", ()=>{
+      const i = +li.dataset.i;
+      flyTo(stage.highlights[i]);
+      openPopup(stage, i);
+      highlightListItem(i);
+    });
+  });
+}
+
+function highlightListItem(i){
+  document.querySelectorAll(".hl-item").forEach(li=>li.classList.remove("active"));
+  const el = document.querySelector(`.hl-item[data-i="${i}"]`);
+  if (el) el.classList.add("active");
+}
+
+function flyTo(h){
+  state.map.flyTo({
+    center: h._display || h.coord,
+    zoom:Math.max(13, state.map.getZoom()),
+    duration:800,
+    essential:true,
+  });
+}
+
+function renderStars(n){
+  return Array.from({length:5}).map((_,i)=>
+    i<n
+      ? `<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15,9 22,10 17,15 18,22 12,18 6,22 7,15 2,10 9,9"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12,2 15,9 22,10 17,15 18,22 12,18 6,22 7,15 2,10 9,9"/></svg>`
+  ).join("");
+}
+
+/* ─────────────────────────────────────────────────────
+   Elevation strip
+   ───────────────────────────────────────────────────── */
+function renderElevation(route){
+  const svg = document.getElementById("elev-svg");
+  const coords = route.coords;
+  const st = route.stats || {};
+  if (!coords || coords.length < 2) { svg.innerHTML=""; return; }
+
+  // Cumulative distance along the track
+  const cum = [0];
+  for (let i=1;i<coords.length;i++){
+    cum.push(cum[i-1] + hav(coords[i-1], coords[i]));
+  }
+  const total = cum[coords.length-1];
+  let eMin = Infinity, eMax = -Infinity;
+  for (const c of coords){
+    if (c[2]<eMin) eMin=c[2];
+    if (c[2]>eMax) eMax=c[2];
+  }
+  const range = Math.max(1, eMax - eMin);
+
+  const W = 1000, H = 80, P = 4;
+  const xs = cum.map(d => P + (d/total) * (W - 2*P));
+  const ys = coords.map(c => P + (1 - (c[2]-eMin)/range) * (H - 2*P));
+
+  const area = `M ${xs[0].toFixed(1)} ${H-P} L ` +
+    xs.map((x,i)=>`${x.toFixed(1)} ${ys[i].toFixed(1)}`).join(" L ") +
+    ` L ${xs[xs.length-1].toFixed(1)} ${H-P} Z`;
+  const line = "M " + xs.map((x,i)=>`${x.toFixed(1)} ${ys[i].toFixed(1)}`).join(" L ");
+
+  svg.innerHTML = `
     <defs>
       <linearGradient id="elevg" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#ffc840" stop-opacity="0.55"/>
-        <stop offset="100%" stop-color="#4a8ed8" stop-opacity="0.10"/>
+        <stop offset="0%" stop-color="#d64545" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="#ffc840" stop-opacity="0.10"/>
       </linearGradient>
     </defs>
     <path d="${area}" fill="url(#elevg)"/>
-    <path d="${line}" fill="none" stroke="#ffc840" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
+    <path d="${line}" fill="none" stroke="#d64545" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
   `;
-  // y-axis labels
-  const y=document.getElementById("y-axis");
-  y.innerHTML=`<div>${Math.round(s.max)} m</div><div>${Math.round((s.max+s.min)/2)} m</div><div>${Math.round(s.min)} m</div>`;
-  // x-axis labels (~5 ticks)
-  const x=document.getElementById("x-axis");
-  const total=(s.dist/1000).toFixed(1);
-  const ticks=5;
-  let xh="";
-  for(let i=0;i<=ticks;i++){
-    const km=((s.dist/1000)*i/ticks).toFixed(0);
-    xh+=`<span>${km} km</span>`;
+
+  // Y-axis labels
+  document.getElementById("y-axis").innerHTML =
+    `<div>${Math.round(eMax)} m</div><div>${Math.round((eMax+eMin)/2)} m</div><div>${Math.round(eMin)} m</div>`;
+
+  // X-axis labels
+  const ticks = 5;
+  let xh = "";
+  for (let i=0;i<=ticks;i++){
+    const km = ((st.km||0) * i/ticks).toFixed(0);
+    xh += `<span>${km} km</span>`;
   }
-  x.innerHTML=xh;
+  document.getElementById("x-axis").innerHTML = xh;
+
   document.getElementById("strip-sub").textContent =
-    `${(s.dist/1000).toFixed(1)} km · ${Math.round(s.gain)} m ↑ · ${Math.round(s.max)} m max`;
-  wireProfileHover(coords,s);
+    `${st.km?.toFixed(1) ?? "—"} km · ${st.gain_m ?? "—"} m ↑ · ${st.max_m ?? "—"} m max`;
+
+  wireProfileHover(coords, cum, total, eMin, eMax);
 }
-function wireProfileHover(coords,s){
-  const wrap=document.getElementById("prof-wrap");
-  const tip=document.getElementById("prof-tip");
-  const cur=document.getElementById("prof-cur");
-  wrap.onmousemove=(e)=>{
-    const rc=wrap.getBoundingClientRect();
-    const x=Math.max(0,Math.min(rc.width,e.clientX-rc.left));
-    const frac=x/rc.width;
-    const target=frac*s.dist;
-    let i=0;
-    for(;i<s.cum.length;i++){ if(s.cum[i]>=target)break; }
-    i=Math.min(i,coords.length-1);
-    const km=(s.cum[i]/1000).toFixed(1);
-    const ele=Math.round(coords[i][2]);
-    tip.textContent=`${km} km · ${ele} m`;
-    tip.style.left=x+"px";
-    tip.style.top=(Math.max(0,Math.min(rc.height-4, (1-(coords[i][2]-s.min)/((s.max-s.min)||1))*rc.height))+4)+"px";
-    tip.style.opacity=1;
-    cur.style.left=x+"px"; cur.style.opacity=.7;
+
+function wireProfileHover(coords, cum, total, eMin, eMax){
+  const wrap = document.getElementById("prof-wrap");
+  const tip = document.getElementById("prof-tip");
+  const cur = document.getElementById("prof-cur");
+  wrap.onmousemove = (e)=>{
+    const rc = wrap.getBoundingClientRect();
+    const x = Math.max(0, Math.min(rc.width, e.clientX - rc.left));
+    const frac = x / rc.width;
+    const target = frac * total;
+    let idx = 0;
+    for (let i=0;i<cum.length;i++){
+      if (cum[i] >= target){ idx = i; break; }
+    }
+    const km = (cum[idx]/1000).toFixed(1);
+    const ele = Math.round(coords[idx][2]);
+    tip.textContent = `${km} km · ${ele} m`;
+    tip.style.left = x + "px";
+    const range = Math.max(1, eMax - eMin);
+    const yFrac = 1 - (coords[idx][2] - eMin) / range;
+    tip.style.top = (yFrac * (rc.height - 14) + 4) + "px";
+    tip.style.opacity = 1;
+    cur.style.left = x + "px";
+    cur.style.opacity = 0.8;
   };
-  wrap.onmouseleave=()=>{ tip.style.opacity=0; cur.style.opacity=0; };
+  wrap.onmouseleave = ()=>{ tip.style.opacity = 0; cur.style.opacity = 0; };
+}
+
+function hav(a,b){
+  const R = 6371000, toRad = x=>x*Math.PI/180;
+  const dLat = toRad(b[1]-a[1]), dLon = toRad(b[0]-a[0]);
+  const s1 = Math.sin(dLat/2), s2 = Math.sin(dLon/2);
+  const q = s1*s1 + Math.cos(toRad(a[1]))*Math.cos(toRad(b[1]))*s2*s2;
+  return 2*R*Math.atan2(Math.sqrt(q), Math.sqrt(1-q));
+}
+
+/* ─────────────────────────────────────────────────────
+   Stage picker pills
+   ───────────────────────────────────────────────────── */
+function renderStagePicker(){
+  const pick = document.getElementById("stage-picker");
+  pick.innerHTML = STAGES.map(s=>`
+    <button data-k="${s.key}" ${s.key===state.activeKey?'class="on"':""} role="tab">
+      <span class="dot"></span>S${s.num}
+    </button>
+  `).join("");
+  pick.querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      renderStage(b.dataset.k, { fit:true });
+    });
+  });
+}
+
+/* ─────────────────────────────────────────────────────
+   Toasts
+   ───────────────────────────────────────────────────── */
+let toastT;
+function toast(msg, err){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.toggle("err", !!err);
+  el.classList.add("on");
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>el.classList.remove("on"), 3000);
+}
+
+/* ─────────────────────────────────────────────────────
+   Data loading
+   ───────────────────────────────────────────────────── */
+async function loadRoutes(){
+  try {
+    const r = await fetch("_routes.json");
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    for (const [key, v] of Object.entries(data)){
+      state.routes[key] = { coords:v.coords, stats:v.stats };
+    }
+    state.dataReady = true;
+    // Immediately populate side panel + elevation + chrome from the data,
+    // without waiting on the map to load. Progressive disclosure.
+    renderStagePanels(state.activeKey);
+    return true;
+  } catch(e){
+    toast((LANG==="bs"?"Greška pri učitavanju ruta: ":"Failed to load routes: ") + e.message, true);
+    return false;
+  }
 }
 
 /* ─────────────────────────────────────────────────────
    UI wiring
    ───────────────────────────────────────────────────── */
 function wireUI(){
-  // Top-nav tabs
-  document.querySelectorAll(".topnav button[data-tab]").forEach(b=>{
-    b.addEventListener("click",()=>{
-      document.querySelectorAll(".topnav button[data-tab]").forEach(x=>x.classList.remove("on"));
-      b.classList.add("on");
-      state.tab=b.dataset.tab;
-      renderSide();
-      if(window.innerWidth<=680) document.getElementById("side").classList.add("open");
-    });
-  });
-  // Lang toggle
+  // Language
   document.querySelectorAll(".lang-pill button").forEach(b=>{
-    b.addEventListener("click",()=>{
+    b.classList.toggle("on", b.dataset.lang===LANG);
+    b.addEventListener("click", ()=>{
       document.querySelectorAll(".lang-pill button").forEach(x=>x.classList.remove("on"));
       b.classList.add("on");
-      LANG=b.dataset.lang; localStorage.setItem("falc.lang",LANG);
-      applyI18n(); renderSide(); renderPoiPopover(); renderMarkers();
+      LANG = b.dataset.lang; localStorage.setItem("tobh.lang", LANG);
+      document.documentElement.lang = LANG;
+      applyI18n();
+      renderStage(state.activeKey, { fit:false });
     });
   });
-
-  // Pills
-  document.getElementById("pill-staze").addEventListener("click",(e)=>{
-    if(e.target.closest(".popover"))return;
-    state.layers.staze=!state.layers.staze;
-    e.currentTarget.classList.toggle("on",state.layers.staze);
-    renderActive();
+  // Basemap
+  document.querySelectorAll("#basemap-ctrl button").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      if (b.classList.contains("on")) return;
+      document.querySelectorAll("#basemap-ctrl button").forEach(x=>x.classList.remove("on"));
+      b.classList.add("on");
+      state.basemap = b.dataset.bm;
+      state.map.setStyle(buildStyle());
+      // styledata listener re-adds route layers
+    });
   });
-  document.getElementById("pill-reljef").addEventListener("click",(e)=>{
-    if(e.target.closest(".popover"))return;
-    state.view3d=!state.view3d;
-    e.currentTarget.classList.toggle("on",state.view3d);
-    if(state.view3d)apply3D(); else apply2D();
+  // View
+  document.querySelectorAll("#view-ctrl button").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      document.querySelectorAll("#view-ctrl button").forEach(x=>x.classList.remove("on"));
+      b.classList.add("on");
+      state.view3d = b.dataset.v === "3d";
+      if (state.view3d) enable3D(); else disable3D();
+    });
   });
-  // POI pill — toggles layer OR opens popover via chevron
-  document.getElementById("pill-poi").addEventListener("click",(e)=>{
-    if(e.target.closest(".popover"))return;
-    // if clicked on chevron zone, open popover; else toggle
-    const pill=e.currentTarget;
-    if(e.target.closest(".chev")){
-      const pop=document.getElementById("pop-poi");
-      closePopovers();
-      pop.classList.add("on");
-      return;
-    }
-    state.layers.poi=!state.layers.poi;
-    pill.classList.toggle("on",state.layers.poi);
-    renderPoiMarkers();
-  });
-  // Topo pill -> basemap popover
-  document.getElementById("pill-topo").addEventListener("click",(e)=>{
-    if(e.target.closest(".popover"))return;
-    const pop=document.getElementById("pop-basemap");
-    const open=!pop.classList.contains("on");
-    closePopovers();
-    if(open){ pop.classList.add("on"); renderBasemapPopover(); }
-    e.currentTarget.classList.toggle("on", state.basemap==="topo" || open);
-  });
-  document.addEventListener("click",(e)=>{
-    if(!e.target.closest(".pop-anchor")) closePopovers();
+  // Fit action
+  document.getElementById("act-fit").addEventListener("click", ()=>{
+    const stage = STAGES.find(s=>s.key===state.activeKey);
+    const route = state.routes[state.activeKey];
+    if (stage && route) fitStage(stage, route);
   });
 
-  // Mobile: tapping side-head toggles open/closed
-  document.getElementById("side-head").addEventListener("click",()=>{
-    if(window.innerWidth<=680){
-      const s=document.getElementById("side");
-      s.classList.toggle("open");
+  // Mobile: tap side-head to expand/collapse
+  document.getElementById("side-head").addEventListener("click", ()=>{
+    if (window.innerWidth <= 720) {
+      document.getElementById("side").classList.toggle("open");
     }
   });
 
-  // Actions — download the pre-built GPX for the active stage
-  document.getElementById("act-gpx").addEventListener("click",()=>{
-    if(!state.active)return;
-    const a=document.createElement("a");
-    a.href=`gpx/${state.active.key}.gpx`;
-    a.download=`Tour_of_BiH_${state.active.key}.gpx`;
-    a.click();
+  window.addEventListener("resize", ()=>{
+    const stage = STAGES.find(s=>s.key===state.activeKey);
+    const route = state.routes[state.activeKey];
+    // no automatic refit on resize — avoids jumping while the user types
   });
-  document.getElementById("act-share").addEventListener("click",async()=>{
-    const shareData={title:"Tour of Bosnia and Herzegovina",text:"Od planina do mora — 5 etapa od Sarajeva do Neuma",url:location.href};
-    try{ if(navigator.share)await navigator.share(shareData);
-      else { await navigator.clipboard.writeText(location.href); toast(LANG==="bs"?"Link kopiran":"Link copied"); } }
-    catch(_){}
-  });
-  document.getElementById("act-info").addEventListener("click",()=>{
-    state.tab="info";
-    document.querySelectorAll(".topnav button[data-tab]").forEach(x=>x.classList.toggle("on",x.dataset.tab==="info"));
-    renderSide();
-    if(window.innerWidth<=680) document.getElementById("side").classList.add("open");
-  });
-
-  // Set initial lang pill state
-  document.querySelectorAll(".lang-pill button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
-  // Hover close popovers on resize
-  window.addEventListener("resize",()=>{ fitActive(); });
 }
 
-/* ─────────────────────────────────────────────────────
-   Toast
-   ───────────────────────────────────────────────────── */
-let toastT;
-function toast(msg,err){
-  const el=document.getElementById("toast");
-  el.textContent=msg; el.classList.toggle("err",!!err); el.classList.add("on");
-  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("on"),3000);
+function applyI18n(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const v = t(el.getAttribute("data-i18n"), null);
+    if (v != null) el.textContent = v;
+  });
 }
 
 /* ─────────────────────────────────────────────────────
@@ -1440,21 +1235,25 @@ function toast(msg,err){
    ───────────────────────────────────────────────────── */
 (async function boot(){
   applyI18n();
+  renderStagePicker();
   initMap();
   wireUI();
-  renderPoiPopover();
-  renderSide();
 
-  const routes=await loadRoutes();
-  if(!routes.length){ toast("Route data unavailable",true); return; }
-  state.routes=routes;
-  state.active=routes.find(r=>r.key==="stage1")||routes[0];
-  if(state.map.isStyleLoaded()&&state.map.getSource("route-main")){
-    renderActive();
-  } else {
-    state.map.once("load",()=>renderActive());
+  const ok = await loadRoutes();
+  if (!ok) return;
+
+  // If map already loaded, add layers; otherwise onMapLoad will do it
+  if (state.styleReady) addRouteLayers();
+
+  // Handle hash-deep-link: #stage3 etc.
+  const hashKey = location.hash.replace("#","");
+  if (hashKey && STAGES.some(s=>s.key===hashKey)) {
+    state.activeKey = hashKey;
   }
-  setTimeout(fetchPois,600);
+  // final render (once both ready)
+  if (state.styleReady && state.dataReady){
+    renderStage(state.activeKey, { fit:true });
+  }
 })();
 </script>
 </body>
